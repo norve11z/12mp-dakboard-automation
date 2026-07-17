@@ -6,7 +6,15 @@ let initialized = false;
 
 export function initDb() {
   if (initialized) return;
-  const sql = fs.readFileSync(path.join(process.cwd(), "lib", "schema.sql"), "utf-8");
+  const candidates = [
+    path.join(process.cwd(), "lib", "schema.sql"),
+    path.join(process.cwd(), "..", "lib", "schema.sql"),
+    path.join(__dirname, "schema.sql"),
+    path.join(__dirname, "..", "lib", "schema.sql"),
+  ];
+  const found = candidates.find(p => fs.existsSync(p));
+  if (!found) throw new Error(`schema.sql not found in: ${candidates.join(", ")}`);
+  const sql = fs.readFileSync(found, "utf-8");
   db.exec(sql);
   initialized = true;
 }

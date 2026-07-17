@@ -9,7 +9,6 @@ services:
       - ./data:/app/data
     environment:
       - DATABASE_PATH=/app/data/app.db
-      - ICS_URL=${ICS_URL}
       - TZ=America/Chicago
     env_file:
       - .env

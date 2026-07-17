@@ -1,5 +1,5 @@
 FROM node:20-alpine AS base
-RUN apk add --no-cache python3 make g++ 
+RUN apk add --no-cache python3 make g++
 
 FROM base AS deps
 WORKDIR /app
@@ -18,5 +18,6 @@ ENV NODE_ENV=production
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/lib/schema.sql ./lib/schema.sql
 EXPOSE 3000
 CMD ["node", "server.js"]
