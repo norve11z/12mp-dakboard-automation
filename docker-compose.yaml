@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    container_name: controlroom-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/app.db
+      - ICS_URL=${ICS_URL}
+      - TZ=America/Chicago
+    env_file:
+      - .env
