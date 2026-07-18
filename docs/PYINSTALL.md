@@ -1,4 +1,3 @@
-<pre>
 # Deployment Guide
 
 Complete instructions for deploying the Control Room app to a Raspberry Pi 5 (ARM64) using Docker.
@@ -217,4 +216,3 @@ scp <pi-user>@<pi-ip>:~/controlroom/data/app.db ./app-backup-$(date +%F).db
 - **Displays blank:** verify `curl http://localhost:3000/controlroom/1` on Pi returns HTML
 - **Data lost after restart:** ensure `./data:/app/data` volume is in `docker-compose.yml`
 - **DAKboard shows nothing:** confirm Pi's IP is stable and reachable from DAKboard Pi
-</pre>
