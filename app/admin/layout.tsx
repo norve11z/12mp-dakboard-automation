@@ -8,6 +8,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Link href="/admin" className="hover:text-blue-400">Dashboard</Link>
         <Link href="/admin/assignments" className="hover:text-blue-400">Assignments</Link>
         <Link href="/admin/games" className="hover:text-blue-400">Games</Link>
+        <Link href="/admin/positions" className="hover:text-blue-400">Positions</Link>
       </nav>
       <main className="p-6">{children}</main>
     </div>

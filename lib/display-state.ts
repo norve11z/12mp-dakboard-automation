@@ -46,10 +46,13 @@ function titleFor(sport: string, displayType: string): string {
   return `${sport.toUpperCase()} ${t}`;
 }
 
+import { getDisplayDate } from "./settings";
+// ...
 export function getPanelState(panel: number, date?: string): DisplayState {
   initDb();
-  const gd = date || today();
+  const gd = date || getDisplayDate();
 
+  
   const row = db.prepare(`
     SELECT d.id, d.sport, d.display_type, d.game_date
     FROM assignments a
