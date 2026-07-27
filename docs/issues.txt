@@ -1,0 +1,22 @@
+Hosting Your Own Embed Site:
+
+
+If you want to host your site to embed, you will need to make sure it can be accessed from the Internet, and it is on a Secure site using HTTPS. 
+You can do this by using a web hosting service that sets up secure sites, or you can set this up on a personal server. 
+
+
+
+If you do this from a personal server, you can use a self-signed certificate, but you must make sure it stays valid if you want the embed to continue working. 
+This method is only recommended for users with the knowledge to create and maintain a website and security certificates. DAKboard is not responsible for anything 
+that will happen to this site or its data using this method, and cannot support you in setting up your site. 
+
+
+
+We realized that DAKboard’s custom iframe embed requires the embedded site to be publicly accessible over HTTPS, 
+so hosting the Next.js app only on a local Raspberry Pi network would not meet the requirement. 
+We decided to move the Next.js app to Vercel, which provides a public HTTPS URL and handles deployment automatically, 
+making the Docker setup unnecessary for the hosted app. After deploying, the /controlroom/1 page returned a 500 error 
+because the app was trying to create and use a local ./data directory for its SQLite database, which works on a Raspberry Pi
+but not on Vercel’s serverless environment. Since the database is a small SQLite database containing control room, shift, 
+assignment, and scheduling data, the plan is to keep the app on Vercel and move the database to a hosted SQLite-compatible service like Turso, 
+then update the database connection and environment variables so the Vercel app can access the data remotely.
