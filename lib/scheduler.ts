@@ -3,6 +3,7 @@ import { importIcs } from "./ics";
 import { rebuildDisplays, autoAssign } from "./assign";
 import db from "./db";
 import { initDb } from "./init-db";
+import { refreshSchedules } from "./espn";
 
 let started = false;
 
@@ -12,8 +13,9 @@ async function runImportCycle(label: string) {
     const imp = await importIcs();
     const disp = rebuildDisplays();
     const assigns = autoAssign();
-    console.log(`[scheduler] ${label} done`, { imp, disp, assigns });
-    return { ok: true, imp, disp, assigns };
+    const schedules = await refreshSchedules();
+    console.log(`[scheduler] ${label} done`, { imp, disp, assigns, schedules });
+    return { ok: true, imp, disp, assigns, schedules };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error(`[scheduler] ${label} failed:`, msg);
@@ -22,6 +24,7 @@ async function runImportCycle(label: string) {
     return { ok: false, error: msg };
   }
 }
+
 
 export function startScheduler() {
   if (started) return;

@@ -8,6 +8,8 @@ interface GameInfo {
   opponent: string | null;
   kickoff: string | null;
   notes: string | null;
+  source: string;
+  logo_url: string | null;
 }
 
 interface Display {
@@ -34,7 +36,7 @@ export default function GamesPage() {
     await fetch("/api/game-info", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sport, game_date, opponent, kickoff, notes }),
+      body: JSON.stringify({ sport, game_date, opponent, kickoff, notes, source: "manual" }),
     });
     load();
   };

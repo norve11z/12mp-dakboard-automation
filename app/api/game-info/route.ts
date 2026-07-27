@@ -10,17 +10,18 @@ export async function GET() {
 
 export async function POST(req: Request) {
   initDb();
-  const { sport, game_date, opponent, kickoff, notes } = await req.json();
+  const { sport, game_date, opponent, kickoff, notes, source } = await req.json();
   if (!sport || !game_date) {
     return NextResponse.json({ ok: false, error: "sport and game_date required" }, { status: 400 });
   }
   db.prepare(`
-    INSERT INTO game_info (sport, game_date, opponent, kickoff, notes)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO game_info (sport, game_date, opponent, kickoff, notes, source)
+    VALUES (?, ?, ?, ?, ?, ?)
     ON CONFLICT(sport, game_date) DO UPDATE SET
       opponent = excluded.opponent,
       kickoff  = excluded.kickoff,
-      notes    = excluded.notes
-  `).run(sport, game_date, opponent || null, kickoff || null, notes || null);
+      notes    = excluded.notes,
+      source   = excluded.source
+  `).run(sport, game_date, opponent || null, kickoff || null, notes || null, source || "manual");
   return NextResponse.json({ ok: true });
 }

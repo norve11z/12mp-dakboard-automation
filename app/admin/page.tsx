@@ -62,6 +62,10 @@ export default function AdminDashboard() {
           className="px-4 py-2 bg-purple-600 rounded hover:bg-purple-700 disabled:opacity-50">
           Seed Test Data
         </button>
+        <button disabled={busy !== null} onClick={() => run("Refresh Schedules", "/api/refresh-schedules")}
+        className="px-4 py-2 bg-orange-600 rounded hover:bg-orange-700 disabled:opacity-50">
+        Refresh Schedules
+      </button>
       </div>
 
       {msg && <pre className="bg-gray-900 p-3 rounded mb-6 text-sm overflow-x-auto">{msg}</pre>}

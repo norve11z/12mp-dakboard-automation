@@ -86,8 +86,10 @@ CREATE TABLE IF NOT EXISTS game_info (
   sport       TEXT NOT NULL,
   game_date   TEXT NOT NULL,
   opponent    TEXT,
-  kickoff     TEXT,                       -- ISO 8601
+  kickoff     TEXT,
   notes       TEXT,
+  logo_url    TEXT,
+  source      TEXT NOT NULL DEFAULT 'manual',
   UNIQUE(sport, game_date)
 );
 
@@ -112,3 +114,4 @@ CREATE TABLE IF NOT EXISTS app_settings (
   value TEXT
 );
 INSERT OR IGNORE INTO app_settings (key, value) VALUES ('display_date_override', NULL);
+
