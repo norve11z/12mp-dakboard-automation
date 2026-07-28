@@ -5,12 +5,8 @@ export async function POST() {
   try {
     const result = await importIcs();
     return NextResponse.json({ ok: true, ...result });
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
 }
-
-export async function GET() {
-  return POST();
-}
+export async function GET() { return POST(); }

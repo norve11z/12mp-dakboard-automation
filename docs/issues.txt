@@ -1,11 +1,6 @@
 Hosting Your Own Embed Site:
-
-
 If you want to host your site to embed, you will need to make sure it can be accessed from the Internet, and it is on a Secure site using HTTPS. 
 You can do this by using a web hosting service that sets up secure sites, or you can set this up on a personal server. 
-
-
-
 If you do this from a personal server, you can use a self-signed certificate, but you must make sure it stays valid if you want the embed to continue working. 
 This method is only recommended for users with the knowledge to create and maintain a website and security certificates. DAKboard is not responsible for anything 
 that will happen to this site or its data using this method, and cannot support you in setting up your site. 

@@ -1,56 +1,30 @@
-import db from "./db";
-import { initDb } from "./init-db";
+import { db } from "./db";
 
 interface SeedShift {
-  uid: string;
-  employee_name: string;
-  position: string;
-  sport: string;
-  department: string;
-  dtstart: string;
-  dtend: string;
-  location: string;
-  description: string;
+  uid: string; employee_name: string; position: string; sport: string; department: string;
+  dtstart: string; dtend: string; location: string; description: string; raw_summary: string;
 }
 
 function isoOffsetDays(days: number, hour: number, minute = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  d.setHours(hour, minute, 0, 0);
+  const d = new Date(); d.setDate(d.getDate() + days); d.setHours(hour, minute, 0, 0);
   return d.toISOString();
 }
 
-export function seedTestData() {
-  initDb();
-
-  // Clear only seeded rows (uid prefix SEED-)
-  db.prepare(`DELETE FROM shifts WHERE uid LIKE 'SEED-%'`).run();
+export async function seedTestData() {
+  await db().execute(`DELETE FROM shifts WHERE uid LIKE 'SEED-%'`);
 
   const shifts: SeedShift[] = [];
   let n = 0;
-  const mk = (
-    employee: string,
-    position: string,
-    sport: string,
-    department: string,
-    dayOffset: number,
-    startHour: number,
-    endHour: number,
-    desc = ""
-  ): SeedShift => ({
+  const mk = (employee: string, position: string, sport: string, department: string,
+              dayOffset: number, startHour: number, endHour: number, desc = ""): SeedShift => ({
     uid: `SEED-${++n}`,
-    employee_name: employee,
-    position,
-    sport,
-    department,
+    employee_name: employee, position, sport, department,
     dtstart: isoOffsetDays(dayOffset, startHour),
-    dtend: isoOffsetDays(dayOffset, endHour),
-    location: sport,
-    description: desc,
+    dtend:   isoOffsetDays(dayOffset, endHour),
+    location: sport, description: desc,
     raw_summary: `${employee} (Shift as ${position} at ${sport} at ${department})`,
-  } as SeedShift & { raw_summary: string });
+  });
 
-  // ===== FOOTBALL BIG SCREEN — tomorrow =====
   const fb = (pos: string, emp: string) => shifts.push(mk(emp, pos, "Football", "Big Screen", 0, 6, 15, "Football Game"));
   fb("Big Screen Producer", "Buds Miller");
   fb("Big Screen TD", "Cooper Wright");
@@ -69,7 +43,6 @@ export function seedTestData() {
   fb("Time Out Coordinator", "Savanna Hill");
   fb("Assistant Producer", "Cogan Boyd");
 
-  // ===== BASEBALL BROADCAST — tomorrow =====
   const bb = (pos: string, emp: string) => shifts.push(mk(emp, pos, "Baseball", "Broadcast", 0, 15, 22, "Baseball vs LSU"));
   bb("Producer", "Marcus Lane");
   bb("Director", "Nora Beck");
@@ -88,7 +61,6 @@ export function seedTestData() {
   bb("Camera 5", "Owen Blake");
   bb("Camera 6", "Sadie Mercer");
 
-  // ===== BASEBALL BIG SCREEN — tomorrow (same game, different crew) =====
   const bbg = (pos: string, emp: string) => shifts.push(mk(emp, pos, "Baseball", "Big Screen", 0, 15, 22, "Baseball vs LSU"));
   bbg("Big Screen Producer", "Drew Kaplan");
   bbg("Big Screen TD", "Reese Alvarez");
@@ -97,7 +69,6 @@ export function seedTestData() {
   bbg("Big Screen Cam Wireless 1", "Sky Nolan");
   bbg("Big Screen Cam Wireless 2", "Lena Fitz");
 
-  // ===== SOCCER BROADCAST — day after tomorrow =====
   const sb = (pos: string, emp: string) => shifts.push(mk(emp, pos, "Soccer", "Broadcast", 1, 18, 22, "Soccer vs Alabama"));
   sb("Producer", "Hank Ivers");
   sb("Director", "Cleo March");
@@ -110,12 +81,11 @@ export function seedTestData() {
   sb("Camera 3", "Halle Grant");
   sb("Camera 4", "Beau Sinclair");
 
-  const stmt = db.prepare(`
-    INSERT INTO shifts (uid, employee_name, position, sport, department, dtstart, dtend, location, description, raw_summary)
-    VALUES (@uid, @employee_name, @position, @sport, @department, @dtstart, @dtend, @location, @description, @raw_summary)
-  `);
-  const tx = db.transaction((rows: SeedShift[]) => { for (const r of rows) stmt.run(r); });
-  tx(shifts);
+  await db().batch(shifts.map(r => ({
+    sql: `INSERT INTO shifts (uid, employee_name, position, sport, department, dtstart, dtend, location, description, raw_summary)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [r.uid, r.employee_name, r.position, r.sport, r.department, r.dtstart, r.dtend, r.location, r.description, r.raw_summary],
+  })));
 
   return { inserted: shifts.length };
 }

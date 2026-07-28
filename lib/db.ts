@@ -1,12 +1,12 @@
-import Database from "better-sqlite3";
-import path from "path";
-import fs from "fs";
+import { createClient, type Client } from "@libsql/client";
 
-const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), "data", "app.db");
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+let _db: Client | null = null;
 
-const db = new Database(dbPath);
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
-
-export default db;
+export function db(): Client {
+  if (_db) return _db;
+  const url = process.env.TURSO_URL;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
+  if (!url) throw new Error("TURSO_URL not set");
+  _db = createClient({ url, authToken });
+  return _db;
+}

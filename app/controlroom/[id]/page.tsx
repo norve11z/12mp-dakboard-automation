@@ -15,7 +15,8 @@ export default async function ControlRoomPage({
   const panel = parseInt(id, 10);
   if (!panel || panel < 1 || panel > 4) notFound();
 
-  const state = getPanelState(panel, date);
+  const state = await getPanelState(panel, date);
+
   return (
     <div className="w-screen h-screen bg-black text-white flex flex-col items-center overflow-hidden font-sans">
       {!state.hasContent ? (
@@ -31,9 +32,7 @@ export default async function ControlRoomPage({
             )}
             <div className="text-3xl mt-4 text-gray-300">{state.dateLabel}</div>
           </div>
-
           <div className="w-11/12 border-t-4 border-white my-6" />
-
           <div className="w-11/12 flex-1 overflow-hidden">
             <table className="w-full text-4xl font-bold">
               <tbody>
@@ -41,9 +40,7 @@ export default async function ControlRoomPage({
                   <tr key={i} className="border-b border-gray-800">
                     <td className="py-2 pr-8 text-gray-400 w-1/3">{row.short_label}</td>
                     <td className="py-2">
-                      {row.names.length > 0 ? row.names.join(" / ") : (
-                        <span className="text-gray-600">TBD</span>
-                      )}
+                      {row.names.length > 0 ? row.names.join(" / ") : <span className="text-gray-600">TBD</span>}
                     </td>
                   </tr>
                 ))}

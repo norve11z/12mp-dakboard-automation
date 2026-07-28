@@ -1,6 +1,5 @@
 import ICAL from "ical.js";
-import db from "./db";
-import { initDb } from "./init-db";
+import { db } from "./db";
 
 const SUMMARY_RE = /^(.+?)\s*\(Shift as (.+?) at (.+?) at (.+?)\)\s*$/;
 const IGNORED_DEPARTMENTS = new Set(["Post-Production", "Engineering"]);
@@ -30,7 +29,6 @@ export function parseSummary(summary: string) {
 }
 
 export async function importIcs(url?: string) {
-  initDb();
   const icsUrl = url || process.env.ICS_URL;
   if (!icsUrl) throw new Error("ICS_URL not set");
 
@@ -50,15 +48,8 @@ export async function importIcs(url?: string) {
     const ev = new ICAL.Event(ve);
     const summary = ev.summary || "";
     const parsed = parseSummary(summary);
-    if (!parsed) {
-      errors.push(`Unparseable: ${summary}`);
-      skipped++;
-      continue;
-    }
-    if (IGNORED_DEPARTMENTS.has(parsed.department)) {
-      skipped++;
-      continue;
-    }
+    if (!parsed) { errors.push(`Unparseable: ${summary}`); skipped++; continue; }
+    if (IGNORED_DEPARTMENTS.has(parsed.department)) { skipped++; continue; }
 
     rows.push({
       uid: ev.uid,
@@ -74,27 +65,29 @@ export async function importIcs(url?: string) {
     });
   }
 
-  const upsert = db.prepare(`
-    INSERT INTO shifts (uid, employee_name, position, sport, department, dtstart, dtend, location, description, raw_summary)
-    VALUES (@uid, @employee_name, @position, @sport, @department, @dtstart, @dtend, @location, @description, @raw_summary)
-    ON CONFLICT(uid) DO UPDATE SET
-      employee_name = excluded.employee_name,
-      position      = excluded.position,
-      sport         = excluded.sport,
-      department    = excluded.department,
-      dtstart       = excluded.dtstart,
-      dtend         = excluded.dtend,
-      location      = excluded.location,
-      description   = excluded.description,
-      raw_summary   = excluded.raw_summary,
-      imported_at   = datetime('now')
-  `);
+  const statements = rows.map(r => ({
+    sql: `INSERT INTO shifts (uid, employee_name, position, sport, department, dtstart, dtend, location, description, raw_summary)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(uid) DO UPDATE SET
+            employee_name = excluded.employee_name,
+            position      = excluded.position,
+            sport         = excluded.sport,
+            department    = excluded.department,
+            dtstart       = excluded.dtstart,
+            dtend         = excluded.dtend,
+            location      = excluded.location,
+            description   = excluded.description,
+            raw_summary   = excluded.raw_summary,
+            imported_at   = datetime('now')`,
+    args: [r.uid, r.employee_name, r.position, r.sport, r.department, r.dtstart, r.dtend, r.location, r.description, r.raw_summary],
+  }));
 
-  const tx = db.transaction((r: ParsedShift[]) => { for (const row of r) upsert.run(row); });
-  tx(rows);
+  if (statements.length) await db().batch(statements);
 
-  db.prepare(`INSERT INTO import_logs (success, message, events_seen) VALUES (1, ?, ?)`)
-    .run(`inserted=${rows.length} skipped=${skipped} errors=${errors.length}`, vevents.length);
+  await db().execute({
+    sql: `INSERT INTO import_logs (success, message, events_seen) VALUES (1, ?, ?)`,
+    args: [`inserted=${rows.length} skipped=${skipped} errors=${errors.length}`, vevents.length],
+  });
 
   return { inserted: rows.length, skipped, total: vevents.length, errors };
 }
