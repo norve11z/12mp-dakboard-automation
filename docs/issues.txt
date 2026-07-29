@@ -1,4 +1,6 @@
 - The admin games page does not have expliciit game time format and only shows a few sports
+- the timezone is off too because when I put 11am it shows 6pm
+
 
 - the admin landing page need more to it.
 
@@ -13,6 +15,7 @@
 
 
 - the control room pages ui needs to be better
+- Dont include big screen or broadcast in front of every title
 
 
 - still need a non gameday page
