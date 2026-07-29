@@ -33,6 +33,25 @@ export default async function ControlRoomPage({
             <div className="text-3xl mt-4 text-gray-300">{state.dateLabel}</div>
           </div>
           <div className="w-11/12 border-t-4 border-white my-6" />
+          {state.schedule && state.schedule.length > 0 && (
+            <>
+              <div className="w-11/12 mb-6">
+                <table className="w-full text-3xl font-bold">
+                  <tbody>
+                    {state.schedule.map((s, i) => (
+                      <tr key={i} className="border-b border-gray-800">
+                        <td className="py-1 pr-8 text-gray-300 w-1/2">{s.label.toUpperCase()}</td>
+                        <td className="py-1 text-yellow-400">
+                          {s.time || <span className="text-gray-600">TBD</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="w-11/12 border-t-4 border-white mb-6" />
+            </>
+          )}
           <div className="w-11/12 flex-1 overflow-hidden">
             <table className="w-full text-4xl font-bold">
               <tbody>

@@ -7,6 +7,11 @@ export interface CrewRow {
   names: string[];
 }
 
+export interface ScheduleRow {
+  label: string;
+  time: string | null;
+}
+
 export interface DisplayState {
   panel: number;
   hasContent: boolean;
@@ -18,6 +23,7 @@ export interface DisplayState {
   title?: string;
   dateLabel?: string;
   crew?: CrewRow[];
+  schedule?: ScheduleRow[];
 }
 
 function formatName(full: string): string {
@@ -39,6 +45,19 @@ function titleFor(sport: string, displayType: string): string {
   return `${sport.toUpperCase()} ${t}`;
 }
 
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-US", {
+    timeZone: "America/Chicago",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function addMinutes(iso: string, mins: number): string {
+  return new Date(new Date(iso).getTime() + mins * 60000).toISOString();
+}
+
 export async function getPanelState(panel: number, date?: string): Promise<DisplayState> {
   const gd = date || (await getDisplayDate());
 
@@ -53,21 +72,24 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   const sport = disp.sport as string;
   const display_type = disp.display_type as string;
   const game_date = disp.game_date as string;
+  const department = display_type === "bigscreen" ? "Big Screen" : "Broadcast";
 
+  const dateRange = [
+    game_date,
+    new Date(new Date(game_date).getTime() - 86400000).toISOString().slice(0, 10),
+    new Date(new Date(game_date).getTime() + 86400000).toISOString().slice(0, 10),
+  ];
+
+  // Shifts (crew)
   const shifts = (await db().execute({
     sql: `SELECT employee_name, position FROM shifts
           WHERE sport = ? AND department = ?
             AND substr(dtstart, 1, 10) IN (?, ?, ?)
           ORDER BY dtstart`,
-    args: [
-      sport,
-      display_type === "bigscreen" ? "Big Screen" : "Broadcast",
-      game_date,
-      new Date(new Date(game_date).getTime() - 86400000).toISOString().slice(0, 10),
-      new Date(new Date(game_date).getTime() + 86400000).toISOString().slice(0, 10),
-    ],
+    args: [sport, department, ...dateRange],
   })).rows;
 
+  // Position map
   const posMap = (await db().execute({
     sql: `SELECT ics_position, short_label, display_order FROM position_map
           WHERE display_type = ? AND sport = ?`,
@@ -102,10 +124,42 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   }
   crew.sort((a, b) => a.display_order - b.display_order);
 
+  // Game info
   const info = (await db().execute({
-    sql: `SELECT opponent, logo_url FROM game_info WHERE sport = ? AND game_date = ?`,
+    sql: `SELECT opponent, logo_url, kickoff FROM game_info WHERE sport = ? AND game_date = ?`,
     args: [sport, game_date],
   })).rows[0];
+
+  // Schedule block: crew_call = earliest ICS shift start
+  const crewCallRow = (await db().execute({
+    sql: `SELECT MIN(dtstart) AS crew_call FROM shifts
+          WHERE sport = ? AND department = ?
+            AND substr(dtstart, 1, 10) IN (?, ?, ?)`,
+    args: [sport, department, ...dateRange],
+  })).rows[0];
+
+  const crewCall = (crewCallRow?.crew_call as string) || null;
+  const gameTime = (info?.kickoff as string) || null;
+
+  const templateRows = (await db().execute({
+    sql: `SELECT label, ref, offset_minutes FROM schedule_template
+          WHERE sport = ? AND display_type = ?`,
+    args: [sport, display_type],
+  })).rows;
+
+  type WithTs = ScheduleRow & { _ts: number };
+  const withTs: WithTs[] = templateRows.map(r => {
+    const ref = r.ref as string;
+    const off = Number(r.offset_minutes);
+    const anchor = ref === "crew_call" ? crewCall : gameTime;
+    return {
+      label: r.label as string,
+      time: anchor ? formatTime(addMinutes(anchor, off)) : null,
+      _ts: anchor ? new Date(addMinutes(anchor, off)).getTime() : Number.MAX_SAFE_INTEGER,
+    };
+  });
+  withTs.sort((a, b) => a._ts - b._ts);
+  const schedule: ScheduleRow[] = withTs.map(({ label, time }) => ({ label, time }));
 
   return {
     panel,
@@ -118,5 +172,6 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
     title: titleFor(sport, display_type),
     dateLabel: formatDateLabel(game_date),
     crew,
+    schedule,
   };
 }
