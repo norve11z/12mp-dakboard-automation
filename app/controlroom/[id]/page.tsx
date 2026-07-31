@@ -55,11 +55,11 @@ export default async function ControlRoomPage({
           <div className="w-11/12 flex-1 overflow-hidden">
             <table className="w-full text-4xl font-bold">
               <tbody>
-                {state.crew?.map((row, i) => (
+                {state.crew?.filter(r => r.names.length > 0).map((row, i) => (
                   <tr key={i} className="border-b border-gray-800">
                     <td className="py-2 pr-8 text-gray-400 w-1/3">{row.short_label}</td>
                     <td className="py-2">
-                      {row.names.length > 0 ? row.names.join(" / ") : <span className="text-gray-600">TBD</span>}
+                      {row.names.join(" / ")}
                     </td>
                   </tr>
                 ))}

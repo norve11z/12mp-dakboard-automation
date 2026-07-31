@@ -34,7 +34,7 @@ function LoginInner() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
       <form onSubmit={submit} className="bg-gray-900 border border-gray-800 rounded-lg p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold mb-6 text-center">Control Room</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">PCR Panel Automation Manager</h1>
         <label className="block mb-4">
           <span className="text-sm text-gray-400">Password</span>
           <input

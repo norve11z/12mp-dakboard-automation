@@ -15,9 +15,23 @@ interface Body {
 
 function localIsoAt(date: string, hm: string): string {
   const [h, m] = hm.split(":").map(Number);
-  const d = new Date(`${date}T00:00:00`);
-  d.setHours(h, m, 0, 0);
-  return d.toISOString();
+  // Interpret as America/Chicago wall time
+  const [y, mo, d] = date.split("-").map(Number);
+  // Chicago is UTC-6 (CST) or UTC-5 (CDT). Determine which.
+  const probe = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0));
+  const offsetHours = getChicagoOffsetHours(probe);
+  // Local hour → UTC hour
+  return new Date(Date.UTC(y, mo - 1, d, h - offsetHours, m, 0)).toISOString();
+}
+
+function getChicagoOffsetHours(d: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    timeZoneName: "shortOffset",
+  }).formatToParts(d);
+  const off = parts.find(p => p.type === "timeZoneName")?.value || "GMT-6";
+  const m = off.match(/GMT([+-]\d+)/);
+  return m ? parseInt(m[1], 10) : -6;
 }
 
 export async function POST(req: Request) {
