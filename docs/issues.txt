@@ -1,19 +1,21 @@
+- On the ics there is a game scheduled but I can find a way to display it on a panel when i put in a custom data nothing happens
+
 - The admin games page does not have expliciit game time format and only shows a few sports
 - the timezone is off too because when I put 11am it shows 6pm
 
 
-- the admin landing page need more to it.
+- the admin landing page need more to it. Or atleast fix the panel previews (not showing)
+- all of the admin pages are not functionally intuitives and dont work together too well
+- theres a lot of settings but the different pages just dont provide a sense of being able to test easily for example if
+- I want to manually test a certain day or a certain sport on a certain panel expliciit
+
 
 - there needs to be a way to test the schedule time better so it doesnt show gametime tbd
-    - the game time tbd has the times before the game time below when they should be above
+- the game time tbd has the times before the game time below when they should be above
 
 
-- the overall them of admin page need to look less slop
-
-
+- the overall theme of admin page need to look less slop
 - A login page needs to be added in place of the default next.js page
-
-
 - the control room pages ui needs to be better
 - Dont include big screen or broadcast in front of every title
 
