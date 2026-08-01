@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { getDisplayDate } from "./settings";
+import { isoToLocalDate, formatTimeLocal, formatDateLabel, addMinutes, addDaysLocal } from "./tz";
 
 export interface CrewRow {
   short_label: string;
@@ -34,29 +35,13 @@ function formatName(full: string): string {
   return `${first} ${lastInitial}.`.toUpperCase();
 }
 
-function formatDateLabel(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dt = new Date(y, m - 1, d);
-  return dt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-}
+
 
 function titleFor(sport: string, displayType: string): string {
   const t = displayType === "bigscreen" ? "VIDEOBOARD" : "BROADCAST";
   return `${sport.toUpperCase()} ${t}`;
 }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-US", {
-    timeZone: "America/Chicago",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-}
-
-function addMinutes(iso: string, mins: number): string {
-  return new Date(new Date(iso).getTime() + mins * 60000).toISOString();
-}
 
 export async function getPanelState(panel: number, date?: string): Promise<DisplayState> {
   const gd = date || (await getDisplayDate());
@@ -76,8 +61,8 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
 
   const dateRange = [
     game_date,
-    new Date(new Date(game_date).getTime() - 86400000).toISOString().slice(0, 10),
-    new Date(new Date(game_date).getTime() + 86400000).toISOString().slice(0, 10),
+    addDaysLocal(game_date, -1),
+    addDaysLocal(game_date, 1),
   ];
 
   // Shifts (crew)
@@ -154,7 +139,7 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
     const anchor = ref === "crew_call" ? crewCall : gameTime;
     return {
       label: r.label as string,
-      time: anchor ? formatTime(addMinutes(anchor, off)) : null,
+      time: anchor ? formatTimeLocal(addMinutes(anchor, off)) : null,
       _ts: anchor ? new Date(addMinutes(anchor, off)).getTime() : Number.MAX_SAFE_INTEGER,
     };
   });

@@ -1,17 +1,11 @@
 import { db } from "./db";
+import { isoToLocalDate } from "./tz";
 
 const DEPT_TO_DISPLAY: Record<string, string> = {
   "Big Screen": "bigscreen",
   "Broadcast": "broadcast",
 };
 
-function localDate(iso: string): string {
-  const d = new Date(iso);
-  const y = d.toLocaleString("en-CA", { timeZone: "America/Chicago", year: "numeric" });
-  const m = d.toLocaleString("en-CA", { timeZone: "America/Chicago", month: "2-digit" });
-  const day = d.toLocaleString("en-CA", { timeZone: "America/Chicago", day: "2-digit" });
-  return `${y}-${m}-${day}`;
-}
 
 export async function rebuildDisplays() {
   const shifts = (await db().execute(`SELECT sport, department, dtstart FROM shifts`)).rows;
@@ -23,7 +17,7 @@ export async function rebuildDisplays() {
     if (!dt) continue;
     const sport = s.sport as string;
     const dtstart = s.dtstart as string;
-    const date = localDate(dtstart);
+    const date = isoToLocalDate(dtstart);
     const key = `${sport}|${date}|${dt}`;
     const existing = groups.get(key);
     if (!existing || dtstart < existing.ics_start) {

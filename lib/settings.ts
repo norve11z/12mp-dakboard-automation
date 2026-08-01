@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { todayLocal } from "./tz";
 
 export async function getSetting(key: string): Promise<string | null> {
   const r = await db().execute({ sql: `SELECT value FROM app_settings WHERE key = ?`, args: [key] });
@@ -15,10 +16,5 @@ export async function setSetting(key: string, value: string | null): Promise<voi
 
 export async function getDisplayDate(): Promise<string> {
   const override = await getSetting("display_date_override");
-  if (override) return override;
-  const d = new Date();
-  const y = d.toLocaleString("en-CA", { timeZone: "America/Chicago", year: "numeric" });
-  const m = d.toLocaleString("en-CA", { timeZone: "America/Chicago", month: "2-digit" });
-  const day = d.toLocaleString("en-CA", { timeZone: "America/Chicago", day: "2-digit" });
-  return `${y}-${m}-${day}`;
+  return override || todayLocal();
 }

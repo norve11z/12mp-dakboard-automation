@@ -13,6 +13,8 @@ interface PositionMap {
 const DEFAULT_KEY = "*";
 const DEFAULT_LABEL = "Default";
 
+
+
 const CATEGORIES: { key: string; sport: string; display_type: string; label: string }[] = [
   { key: "default-broadcast",    sport: "*",                  display_type: "broadcast", label: "Default Broadcast" },
   { key: "default-bigscreen",    sport: "*",                  display_type: "bigscreen", label: "Default Big Screen" },
@@ -35,6 +37,11 @@ function sportLabel(s: string) { return s === DEFAULT_KEY ? DEFAULT_LABEL : s; }
 function typeLabel(t: string)  { return t === "bigscreen" ? "Big Screen" : "Broadcast"; }
 
 export default function PositionsPage() {
+    const [usedPositions, setUsedPositions] = useState<{ sport: string; department: string; position: string }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/positions-used").then(r => r.json()).then(setUsedPositions);
+  }, []);
   const [rows, setRows] = useState<PositionMap[]>([]);
   const [category, setCategory] = useState<string>("default-broadcast");
   const [newRow, setNewRow] = useState({ ics_position: "", short_label: "" });
@@ -117,6 +124,17 @@ export default function PositionsPage() {
     load();
   };
 
+
+
+  const currentDeptLabel = cat.display_type === "bigscreen" ? "Big Screen" : "Broadcast";
+  const usedInCategory = usedPositions
+    .filter(u => u.sport === cat.sport && u.department === currentDeptLabel)
+    .map(u => u.position);
+  const mappedIcsPositions = new Set(filtered.map(f => f.ics_position));
+  const unmapped = usedInCategory.filter(p => !mappedIcsPositions.has(p));
+
+
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-2">Position Labels</h1>
@@ -152,7 +170,28 @@ export default function PositionsPage() {
             </button>
         </div>
         )}
-
+      {unmapped.length > 0 && (
+        <div className="mb-3 bg-yellow-950/40 border border-yellow-800 rounded p-3 text-sm">
+          <div className="font-semibold text-yellow-300 mb-1">
+            ⚠ {unmapped.length} unmapped position{unmapped.length > 1 ? "s" : ""} used in imported shifts:
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {unmapped.map(p => (
+              <button
+                key={p}
+                onClick={() => setNewRow({ ics_position: p, short_label: "" })}
+                className="px-2 py-1 bg-yellow-900/50 hover:bg-yellow-900 rounded text-xs font-mono"
+                title="Click to prefill the Add row"
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+          <div className="text-xs text-gray-500 mt-2">
+            These positions appear in shifts but have no label mapping — they display with raw names. Click one to prefill.
+          </div>
+        </div>
+      )}
       <table className="w-full bg-gray-900 rounded overflow-hidden text-sm">
         <thead className="bg-gray-800 text-left">
           <tr>

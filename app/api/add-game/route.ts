@@ -1,37 +1,17 @@
 import { db } from "@/lib/db";
 import { rebuildDisplays, autoAssign } from "@/lib/assign";
+import { chicagoWallToIso } from "@/lib/tz";
 import { NextResponse } from "next/server";
 
 interface CrewMember { position: string; name: string; }
 interface Body {
   sport: string;
-  game_date: string;         // YYYY-MM-DD
+  game_date: string;
   display_type: "broadcast" | "bigscreen";
-  crew_call: string;         // HH:MM (local)
-  kickoff?: string | null;   // ISO or HH:MM
+  crew_call: string;
+  kickoff?: string | null;
   opponent?: string | null;
   crew: CrewMember[];
-}
-
-function localIsoAt(date: string, hm: string): string {
-  const [h, m] = hm.split(":").map(Number);
-  // Interpret as America/Chicago wall time
-  const [y, mo, d] = date.split("-").map(Number);
-  // Chicago is UTC-6 (CST) or UTC-5 (CDT). Determine which.
-  const probe = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0));
-  const offsetHours = getChicagoOffsetHours(probe);
-  // Local hour → UTC hour
-  return new Date(Date.UTC(y, mo - 1, d, h - offsetHours, m, 0)).toISOString();
-}
-
-function getChicagoOffsetHours(d: Date): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Chicago",
-    timeZoneName: "shortOffset",
-  }).formatToParts(d);
-  const off = parts.find(p => p.type === "timeZoneName")?.value || "GMT-6";
-  const m = off.match(/GMT([+-]\d+)/);
-  return m ? parseInt(m[1], 10) : -6;
 }
 
 export async function POST(req: Request) {
@@ -41,9 +21,8 @@ export async function POST(req: Request) {
   }
 
   const department = b.display_type === "bigscreen" ? "Big Screen" : "Broadcast";
-  const start = localIsoAt(b.game_date, b.crew_call);
-  const endD = new Date(start); endD.setHours(endD.getHours() + 6);
-  const end = endD.toISOString();
+  const start = chicagoWallToIso(b.game_date, b.crew_call);
+  const end = new Date(new Date(start).getTime() + 6 * 3600 * 1000).toISOString();
 
   const stamp = Date.now();
   const stmts = b.crew.map((c, i) => ({
@@ -59,9 +38,9 @@ export async function POST(req: Request) {
   if (stmts.length) await db().batch(stmts);
 
   if (b.opponent || b.kickoff) {
-    const kickoffIso = b.kickoff && b.kickoff.length <= 5
-      ? localIsoAt(b.game_date, b.kickoff)
-      : b.kickoff;
+    const kickoffIso = b.kickoff && /^\d{1,2}:\d{2}$/.test(b.kickoff)
+      ? chicagoWallToIso(b.game_date, b.kickoff)
+      : b.kickoff || null;
     await db().execute({
       sql: `INSERT INTO game_info (sport, game_date, opponent, kickoff, source)
             VALUES (?, ?, ?, ?, 'manual')
@@ -69,7 +48,7 @@ export async function POST(req: Request) {
               opponent = excluded.opponent,
               kickoff  = excluded.kickoff,
               source   = 'manual'`,
-      args: [b.sport, b.game_date, b.opponent || null, kickoffIso || null],
+      args: [b.sport, b.game_date, b.opponent || null, kickoffIso],
     });
   }
 

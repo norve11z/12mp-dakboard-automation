@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { isoToLocalDate } from "./tz";
 
 const TEAMS: Record<string, { league: string; teamId: number }> = {
   "Football":            { league: "football/college-football",             teamId: 245 },
@@ -43,14 +44,6 @@ async function fetchScoreboardForDate(sport: string, yyyymmdd: string): Promise<
   } catch { return []; }
 }
 
-function localDate(iso: string): string {
-  const d = new Date(iso);
-  const y = d.toLocaleString("en-CA", { timeZone: "America/Chicago", year: "numeric" });
-  const m = d.toLocaleString("en-CA", { timeZone: "America/Chicago", month: "2-digit" });
-  const day = d.toLocaleString("en-CA", { timeZone: "America/Chicago", day: "2-digit" });
-  return `${y}-${m}-${day}`;
-}
-
 function parseGame(ev: EspnEvent, teamId: number) {
   const comp = ev.competitions[0]; if (!comp) return null;
   const us = comp.competitors.find(c => c.team.id === String(teamId));
@@ -75,7 +68,7 @@ export async function refreshSchedules() {
   for (const p of pairs) {
     const sport = p.sport as string;
     if (!TEAMS[sport]) continue;
-    const local = localDate((p.iso_date as string) + "T12:00:00Z");
+    const local = isoToLocalDate((p.iso_date as string) + "T12:00:00Z");
     if (!targets.has(sport)) targets.set(sport, new Set());
     targets.get(sport)!.add(local);
   }
@@ -87,14 +80,14 @@ export async function refreshSchedules() {
     const teamId = TEAMS[sport].teamId;
     const scheduleEvents = await fetchTeamSchedule(sport);
     const byDate = new Map<string, EspnEvent>();
-    for (const ev of scheduleEvents) byDate.set(localDate(ev.date), ev);
+    for (const ev of scheduleEvents) byDate.set(isoToLocalDate(ev.date), ev);
 
     for (const gd of dates) {
       let match = byDate.get(gd);
       if (!match) {
         const yyyymmdd = gd.replaceAll("-", "");
         const fallback = await fetchScoreboardForDate(sport, yyyymmdd);
-        match = fallback.find(ev => localDate(ev.date) === gd);
+        match = fallback.find(ev => isoToLocalDate(ev.date) === gd);
       }
       if (!match) { missing++; continue; }
       const parsed = parseGame(match, teamId);
