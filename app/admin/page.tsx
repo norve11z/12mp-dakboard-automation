@@ -9,6 +9,8 @@ interface Display {
   ics_start: string;
   control_room_id: number | null;
   manual: number | null;
+  crew_count: number | null;
+  crew_call: string | null;
 }
 
 interface GameInfo {
@@ -147,32 +149,33 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Date selector */}
-      <div className="bg-gray-900 border border-gray-800 rounded p-4 mb-6">
-        <div className="flex items-center gap-4 flex-wrap">
-          <label className="text-sm text-gray-400">Viewing date:</label>
-          <input type="date" value={selectedDate}
-            onChange={e => setSelectedDate(e.target.value)}
-            className="bg-gray-800 px-3 py-2 rounded" />
-          {dateOptions.length > 0 && (
-            <select value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-              className="bg-gray-800 px-3 py-2 rounded text-sm">
-              <option value="">— quick pick —</option>
-              {dateOptions.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-          )}
-          <div className="flex-1" />
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500">Panel display date:</span>
-            <select value={override} onChange={e => setDateOverride(e.target.value)}
-              className="bg-gray-800 px-2 py-1 rounded">
-              <option value="">Today (auto)</option>
-              {dateOptions.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            {override && <button onClick={() => setDateOverride("")} className="text-red-400 text-xs hover:underline">clear</button>}
-          </div>
-        </div>
+    {/* Date selector */}
+    <div className="bg-gray-900 border border-gray-800 rounded p-4 mb-6 flex items-center gap-3 flex-wrap">
+      <label className="text-sm text-gray-400">Display date:</label>
+      <input
+        type="date"
+        value={override || selectedDate}
+        onChange={e => {
+          setDateOverride(e.target.value);
+          setSelectedDate(e.target.value);
+        }}
+        className="bg-gray-800 px-3 py-2 rounded"
+      />
+      <button
+        onClick={() => {
+          const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+          setDateOverride("");
+          setSelectedDate(today);
+        }}
+        className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600 text-sm"
+      >
+        Reset to today
+      </button>
+      <div className="text-sm text-gray-500 ml-2">
+        {override ? <span className="text-yellow-400">Override active — panels show {override}</span>
+                  : <span>Panels show today (auto)</span>}
       </div>
+    </div>
 
       {/* Panel previews */}
       <h2 className="text-xl font-bold mb-3">Panels for {selectedDate || "—"}</h2>
@@ -188,14 +191,40 @@ export default function AdminDashboard() {
                   target="_blank" className="text-blue-400 text-xs hover:underline">open ↗</a>
               </div>
               {d ? (
-                <div className="p-3 flex-1">
-                  <div className="text-lg font-bold">{d.sport}</div>
-                  <div className="text-xs text-gray-400 uppercase mb-2">{d.display_type}</div>
-                  {g?.opponent && <div className="text-sm">vs {g.opponent}</div>}
-                  {g?.kickoff && <div className="text-xs text-gray-400">{new Date(g.kickoff).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })}</div>}
-                  {d.manual === 1 && <div className="text-xs text-yellow-400 mt-2">manual</div>}
-                  <button onClick={() => clearPanel(p, d.game_date)}
-                    className="mt-2 text-xs text-red-400 hover:underline">unassign</button>
+                <div className="p-3 flex-1 flex flex-col gap-1">
+                  <div className="text-lg font-bold leading-tight">{d.sport}</div>
+                  <div className="text-xs text-gray-400 uppercase">{d.display_type}</div>
+                  {g?.opponent && <div className="text-sm mt-1">vs {g.opponent}</div>}
+                  <div className="text-xs text-gray-400 mt-1 space-y-0.5">
+                    {d.crew_call && (
+                      <div>
+                        <span className="text-gray-500">Crew call:</span>{" "}
+                        {new Date(d.crew_call).toLocaleTimeString("en-US", {
+                          timeZone: "America/Chicago", hour: "numeric", minute: "2-digit",
+                        })}
+                      </div>
+                    )}
+                    {g?.kickoff && (
+                      <div>
+                        <span className="text-gray-500">Kickoff:</span>{" "}
+                        {new Date(g.kickoff).toLocaleTimeString("en-US", {
+                          timeZone: "America/Chicago", hour: "numeric", minute: "2-digit",
+                        })}
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-gray-500">Crew:</span>{" "}
+                      {d.crew_count ?? 0} member{d.crew_count === 1 ? "" : "s"}
+                    </div>
+                  </div>
+                  <div className="flex-1" />
+                  <div className="flex items-center justify-between mt-2">
+                    {d.manual === 1
+                      ? <span className="text-xs text-yellow-400">manual</span>
+                      : <span className="text-xs text-gray-600">auto</span>}
+                    <button onClick={() => clearPanel(p, d.game_date)}
+                      className="text-xs text-red-400 hover:underline">unassign</button>
+                  </div>
                 </div>
               ) : (
                 <div className="p-3 flex-1 flex items-center justify-center text-gray-600 text-sm">empty</div>

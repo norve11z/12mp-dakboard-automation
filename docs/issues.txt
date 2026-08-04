@@ -1,12 +1,6 @@
 - the overall theme of admin page need to look less slop
 - still need a non gameday page
-- on admin landing there are 3 date selections in the same row. very ambiguous
 
-
-UX polish
-
-    Panel preview cards don't show crew count / crew-call time — add
-    No confirmation toast for successful actions (only shows in gray text)
 
 Feature gaps
 
