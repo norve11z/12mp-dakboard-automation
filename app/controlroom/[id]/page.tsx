@@ -1,7 +1,9 @@
 import { getPanelState } from "@/lib/display-state";
 import { notFound } from "next/navigation";
+import AutoRefresh from "./AutoRefresh";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function ControlRoomPage({
   params,
@@ -19,6 +21,7 @@ export default async function ControlRoomPage({
 
   return (
     <div className="w-screen h-screen bg-black text-white flex flex-col items-center overflow-hidden font-sans">
+      <AutoRefresh intervalMs={12 * 60 * 60 * 1000} />
       {!state.hasContent ? (
         <Placeholder panel={panel} />
       ) : (
