@@ -39,23 +39,29 @@ export default function AdminDashboard() {
   const [oldDays, setOldDays] = useState(7);
 
   const loadAll = useCallback(async () => {
-    const [d, g, s, o] = await Promise.all([
-      fetch("/api/displays").then(r => r.json()),
-      fetch("/api/game-info").then(r => r.json()),
-      fetch("/api/maintenance", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "stats" }) }).then(r => r.json()),
-      fetch("/api/settings/display-date").then(r => r.json()),
-    ]);
-    setDisplays(d);
-    setGames(g);
-    setStats(s);
-    setOverride(o.display_date_override || "");
-    if (!selectedDate) {
-      const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
-      setSelectedDate(o.display_date_override || today);
-    }
-  }, [selectedDate]);
+    const res = await fetch("/api/dashboard", {
+      cache: "no-store",
+    });
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+    if (!res.ok) {
+      throw new Error(`Dashboard load failed: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    setDisplays(data.displays);
+    setGames(data.games);
+    setStats(data.stats);
+    setOverride(data.display_date_override || "");
+
+    setSelectedDate(
+      current => current || data.display_date_override || data.today
+    );
+  }, []);
+
+  useEffect(() => {
+    void loadAll();
+  }, [loadAll]);
 
   const runSync = async () => {
     setSyncing(true); setSyncMsg("");
@@ -66,7 +72,7 @@ export default function AdminDashboard() {
         : `✗ ${r.error}`);
     } catch (e) { setSyncMsg("✗ " + String(e)); }
     setSyncing(false);
-    loadAll();
+    await loadAll();
   };
 
   const runStep = async (label: string, url: string) => {
@@ -74,15 +80,31 @@ export default function AdminDashboard() {
     const r = await fetch(url, { method: "POST" }).then(r => r.json());
     setSyncMsg(`${label}: ${JSON.stringify(r)}`);
     setSyncing(false);
-    loadAll();
+    await loadAll();
   };
 
   const setDateOverride = async (date: string) => {
-    await fetch("/api/settings/display-date", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: date || null }),
-    });
+    // Update UI immediately.
     setOverride(date);
+    setSelectedDate(date);
+
+    try {
+      const res = await fetch("/api/settings/display-date", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: date || null }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Date update failed: ${res.status}`);
+      }
+    } catch (e) {
+      setSyncMsg(
+        `✗ ${e instanceof Error ? e.message : String(e)}`
+      );
+
+      await loadAll();
+    }
   };
 
   const assignPanel = async (displayId: number, controlRoomId: number) => {
@@ -90,7 +112,7 @@ export default function AdminDashboard() {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ displayId, controlRoomId }),
     });
-    loadAll();
+    await loadAll();
   };
 
   const clearPanel = async (controlRoomId: number, date: string) => {
@@ -98,7 +120,7 @@ export default function AdminDashboard() {
       method: "DELETE", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ controlRoomId, date }),
     });
-    loadAll();
+    await loadAll();
   };
 
   const maintenance = async (action: string, extra: Record<string, unknown> = {}) => {
@@ -109,7 +131,7 @@ export default function AdminDashboard() {
     }).then(r => r.json());
     setSyncMsg(`${action}: deleted ${r.deleted ?? 0}`);
     await fetch("/api/rebuild", { method: "POST" });
-    loadAll();
+    await loadAll();
   };
 
   const dateOptions = Array.from(new Set(displays.map(d => d.game_date))).sort();

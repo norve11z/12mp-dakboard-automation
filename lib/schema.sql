@@ -125,3 +125,28 @@ CREATE TABLE IF NOT EXISTS panel_combo_rules (
   panel_3      TEXT,
   panel_4      TEXT
 );
+
+
+CREATE INDEX IF NOT EXISTS
+  idx_shifts_sport_dept_dtstart
+ON shifts(sport, department, dtstart);
+
+CREATE INDEX IF NOT EXISTS
+  idx_assignments_panel_date
+ON assignments(control_room_id, game_date);
+
+CREATE INDEX IF NOT EXISTS
+  idx_assignments_date_manual
+ON assignments(game_date, manual);
+
+CREATE INDEX IF NOT EXISTS
+  idx_game_info_sport_date
+ON game_info(sport, game_date);
+
+CREATE INDEX IF NOT EXISTS
+  idx_position_map_display_sport
+ON position_map(display_type, sport);
+
+CREATE INDEX IF NOT EXISTS
+  idx_schedule_template_sport_display
+ON schedule_template(sport, display_type);
