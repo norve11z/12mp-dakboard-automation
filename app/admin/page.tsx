@@ -119,94 +119,159 @@ export default function AdminDashboard() {
   const displayFor = (panel: number) => displaysForDate.find(d => d.control_room_id === panel);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Status bar */}
-      <div className="sticky top-0 z-10 bg-gray-950 border-b border-gray-800 py-3 mb-6 flex items-center gap-6 text-sm">
-        <div><span className="text-gray-500">Shifts:</span> <strong>{stats?.shifts ?? "—"}</strong>
-          {stats && stats.seed > 0 && <span className="text-yellow-400 ml-1">({stats.seed} seeded)</span>}
+    <div className="min-h-screen bg-[#0a0a0a] text-[#e7e5e2] font-sans">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        .amdb-display { font-family: 'Oswald', 'Arial Narrow', sans-serif; }
+        .amdb-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .amdb-scope input[type="date"]::-webkit-calendar-picker-indicator,
+        .amdb-scope input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.55); cursor: pointer; }
+        .amdb-scope select { color-scheme: dark; }
+        .amdb-scope ::-webkit-scrollbar { width: 10px; height: 10px; }
+        .amdb-scope ::-webkit-scrollbar-track { background: #131316; }
+        .amdb-scope ::-webkit-scrollbar-thumb { background: #313136; border-radius: 2px; }
+        .amdb-scope ::-webkit-scrollbar-thumb:hover { background: #47474d; }
+        .amdb-tally { box-shadow: 0 0 5px 0 currentColor; }
+      `}</style>
+
+      <div className="amdb-scope max-w-[1400px] mx-auto px-6 pb-14">
+
+        {/* Masthead + status bar */}
+        <div className="sticky top-0 z-20 -mx-6 px-6 bg-[#0a0a0a]/97 backdrop-blur border-b border-[#3d1414]">
+          <div className="flex items-center justify-between pt-5 pb-3">
+            <div className="flex items-baseline gap-3">
+              <span className="amdb-display text-[19px] font-semibold uppercase tracking-wide text-[#c96060]">
+                12th Man Productions
+              </span>
+              <span className="amdb-mono text-[10px] uppercase tracking-[0.22em] text-[#65656b]">
+                Control Room / Scheduling
+              </span>
+            </div>
+            <div className="amdb-mono text-[10px] uppercase tracking-[0.18em] text-[#55555b]">
+              Texas A&amp;M Athletics
+            </div>
+          </div>
+
+          <div className="flex items-center gap-7 text-sm border-t border-[#1c1c1f] py-3">
+            <div className="flex items-baseline gap-2">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Shifts</span>
+              <strong className="amdb-mono text-base text-[#e7e5e2]">{stats?.shifts ?? "—"}</strong>
+              {stats && stats.seed > 0 && (
+                <span className="amdb-mono text-[10px] uppercase tracking-wide text-[#c99a3e]">({stats.seed} seeded)</span>
+              )}
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Last Import</span>
+              <strong className="amdb-mono text-sm text-[#e7e5e2]">
+                {stats?.lastImport ? new Date(stats.lastImport + "Z").toLocaleString("en-US", { timeZone: "America/Chicago" }) : "never"}
+              </strong>
+            </div>
+
+            <div className="flex-1" />
+
+            <button onClick={runSync} disabled={syncing}
+              className="amdb-mono px-4 py-1.5 text-xs font-semibold uppercase tracking-wider bg-[#500000] border border-[#7a1f1f] text-[#f3e6e6] rounded-sm hover:bg-[#631515] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              {syncing ? "Syncing…" : "Sync Now"}
+            </button>
+            <button onClick={() => setShowAdvanced(v => !v)}
+              className="amdb-mono text-[11px] uppercase tracking-wider text-[#6b6b70] hover:text-[#e7e5e2] transition-colors">
+              {showAdvanced ? "▲ hide advanced" : "▼ advanced"}
+            </button>
+          </div>
         </div>
-        <div><span className="text-gray-500">Last import:</span>{" "}
-        <strong>{stats?.lastImport ? new Date(stats.lastImport + "Z").toLocaleString("en-US", { timeZone: "America/Chicago" }) : "never"}</strong>
-       </div>
-        <div className="flex-1" />
-        <button onClick={runSync} disabled={syncing}
-          className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 font-medium">
-          {syncing ? "Syncing…" : "Sync Now"}
-        </button>
-        <button onClick={() => setShowAdvanced(v => !v)}
-          className="text-gray-500 hover:text-white text-xs">
-          {showAdvanced ? "▲ hide advanced" : "▼ advanced"}
-        </button>
-      </div>
 
-      {syncMsg && <div className="bg-gray-900 border border-gray-800 rounded p-2 mb-4 text-sm font-mono">{syncMsg}</div>}
+        {syncMsg && (
+          <div className="amdb-mono mt-5 text-xs text-[#b9b7b3] bg-[#111113] border-l-2 border-[#7a1f1f] px-3 py-2">
+            {syncMsg}
+          </div>
+        )}
 
-      {showAdvanced && (
-        <div className="bg-gray-900 border border-gray-800 rounded p-3 mb-6 flex gap-2 text-sm">
-          <button onClick={() => runStep("Import ICS", "/api/import")} className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">Import ICS</button>
-          <button onClick={() => runStep("Refresh Schedules", "/api/refresh-schedules")} className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">Refresh Schedules</button>
-          <button onClick={() => runStep("Rebuild", "/api/rebuild")} className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">Rebuild & Assign</button>
+        {showAdvanced && (
+          <div className="mt-4 bg-[#111113] border border-[#232326] rounded-sm p-3 flex gap-2 text-xs">
+            <button onClick={() => runStep("Import ICS", "/api/import")}
+              className="amdb-mono px-3 py-1.5 uppercase tracking-wide bg-[#1a1a1d] border border-[#2c2c30] rounded-sm hover:border-[#47474d] hover:bg-[#202023] transition-colors">
+              Import ICS
+            </button>
+            <button onClick={() => runStep("Refresh Schedules", "/api/refresh-schedules")}
+              className="amdb-mono px-3 py-1.5 uppercase tracking-wide bg-[#1a1a1d] border border-[#2c2c30] rounded-sm hover:border-[#47474d] hover:bg-[#202023] transition-colors">
+              Refresh Schedules
+            </button>
+            <button onClick={() => runStep("Rebuild", "/api/rebuild")}
+              className="amdb-mono px-3 py-1.5 uppercase tracking-wide bg-[#1a1a1d] border border-[#2c2c30] rounded-sm hover:border-[#47474d] hover:bg-[#202023] transition-colors">
+              Rebuild &amp; Assign
+            </button>
+          </div>
+        )}
+
+        {/* Date selector */}
+        <div className="mt-6 bg-[#111113] border border-[#232326] rounded-sm p-4 flex items-center gap-3 flex-wrap">
+          <label className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Display Date</label>
+          <input
+            type="date"
+            value={override || selectedDate}
+            onChange={e => {
+              setDateOverride(e.target.value);
+              setSelectedDate(e.target.value);
+            }}
+            className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-[#7a1f1f]"
+          />
+          <button
+            onClick={() => {
+              const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+              setDateOverride("");
+              setSelectedDate(today);
+            }}
+            className="amdb-mono px-3 py-1.5 text-xs uppercase tracking-wide bg-[#1a1a1d] border border-[#2c2c30] rounded-sm hover:border-[#47474d] hover:bg-[#202023] transition-colors"
+          >
+            Reset to Today
+          </button>
+          <div className="amdb-mono text-xs ml-2">
+            {override
+              ? <span className="text-[#c99a3e] flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#c99a3e] amdb-tally inline-block" />Override active — panels show {override}</span>
+              : <span className="text-[#6b6b70] flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#4a9d5f] amdb-tally inline-block" />Panels show today (auto)</span>}
+          </div>
         </div>
-      )}
 
-    {/* Date selector */}
-    <div className="bg-gray-900 border border-gray-800 rounded p-4 mb-6 flex items-center gap-3 flex-wrap">
-      <label className="text-sm text-gray-400">Display date:</label>
-      <input
-        type="date"
-        value={override || selectedDate}
-        onChange={e => {
-          setDateOverride(e.target.value);
-          setSelectedDate(e.target.value);
-        }}
-        className="bg-gray-800 px-3 py-2 rounded"
-      />
-      <button
-        onClick={() => {
-          const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
-          setDateOverride("");
-          setSelectedDate(today);
-        }}
-        className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600 text-sm"
-      >
-        Reset to today
-      </button>
-      <div className="text-sm text-gray-500 ml-2">
-        {override ? <span className="text-yellow-400">Override active — panels show {override}</span>
-                  : <span>Panels show today (auto)</span>}
-      </div>
-    </div>
-
-      {/* Panel previews */}
-      <h2 className="text-xl font-bold mb-3">Panels for {selectedDate || "—"}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[1, 2, 3, 4].map(p => {
-          const d = displayFor(p);
-          const g = d ? gameFor(d.sport) : null;
-          return (
-            <div key={p} className="bg-gray-900 border border-gray-800 rounded overflow-hidden flex flex-col">
-              <div className="px-3 py-2 bg-gray-800 flex items-center justify-between">
-                <strong>Panel {p}</strong>
-                <a href={`/controlroom/${p}${override ? `?date=${override}` : ""}`}
-                  target="_blank" className="text-blue-400 text-xs hover:underline">open ↗</a>
-              </div>
+        {/* Panel previews */}
+        <div className="flex items-baseline gap-2 mt-9 mb-3">
+          <h2 className="amdb-display text-base font-semibold uppercase tracking-wide text-[#d8d6d3]">Panels</h2>
+          <span className="amdb-mono text-xs text-[#6b6b70]">{selectedDate || "—"}</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+          {[1, 2, 3, 4].map(p => {
+            const d = displayFor(p);
+            const g = d ? gameFor(d.sport) : null;
+            const dotColor = !d ? "#47474d" : d.manual === 1 ? "#c99a3e" : "#4a9d5f";
+            const statusLabel = !d ? "empty" : d.manual === 1 ? "manual" : "auto";
+            return (
+              <div key={p} className="bg-[#111113] border border-[#232326] rounded-sm overflow-hidden flex flex-col">
+                <div className="px-3 py-2 bg-[#18181b] border-b border-[#232326] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full amdb-tally inline-block" style={{ backgroundColor: dotColor, color: dotColor }} />
+                    <strong className="amdb-mono text-xs uppercase tracking-widest text-[#d8d6d3]">Panel {p}</strong>
+                  </div>
+                  <a href={`/controlroom/${p}${override ? `?date=${override}` : ""}`}
+                    target="_blank" className="amdb-mono text-[10px] uppercase tracking-wide text-[#8f5757] hover:text-[#c96060]">
+                    open ↗
+                  </a>
+                </div>
                 {d ? (
                   <div className="p-3 flex-1 flex flex-col gap-1">
-                    <div className="text-lg font-bold leading-tight">{d.sport}</div>
-                    <div className="text-xs text-gray-400 uppercase">{d.display_type}</div>
-                    {g?.opponent && <div className="text-sm mt-1">vs {g.opponent}</div>}
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="amdb-display text-lg font-semibold leading-tight text-[#e7e5e2]">{d.sport}</div>
+                    <div className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">{d.display_type}</div>
+                    {g?.opponent && <div className="text-sm mt-1 text-[#b9b7b3]">vs {g.opponent}</div>}
+                    <div className="amdb-mono text-[11px] text-[#7d7d82] mt-1.5 space-y-0.5">
                       {d.crew_call && <div>Crew call: {new Date(d.crew_call).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })}</div>}
                       {g?.kickoff && <div>Kickoff: {new Date(g.kickoff).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })}</div>}
                       <div>Crew: {d.crew_count ?? 0}</div>
                     </div>
                     <div className="flex-1" />
-                    <div className="text-xs text-gray-500 mt-1">{d.manual === 1 ? "manual" : "auto"}</div>
+                    <div className="amdb-mono text-[10px] uppercase tracking-widest mt-1" style={{ color: dotColor }}>{statusLabel}</div>
                   </div>
                 ) : (
-                  <div className="p-3 flex-1 flex items-center justify-center text-gray-600 text-sm">empty</div>
+                  <div className="p-3 flex-1 flex items-center justify-center text-[#47474d] text-xs amdb-mono uppercase tracking-widest">empty</div>
                 )}
-                <div className="p-2 border-t border-gray-800">
+                <div className="p-2 border-t border-[#232326]">
                   <select
                     value={d?.id ?? ""}
                     onChange={e => {
@@ -214,7 +279,7 @@ export default function AdminDashboard() {
                       if (!val) clearPanel(p, selectedDate);
                       else assignPanel(Number(val), p);
                     }}
-                    className="bg-gray-800 px-2 py-1 rounded text-xs w-full"
+                    className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2 py-1.5 rounded-sm text-xs w-full focus:outline-none focus:border-[#7a1f1f]"
                   >
                     <option value="">— empty —</option>
                     {displaysForDate.map(x => (
@@ -224,99 +289,98 @@ export default function AdminDashboard() {
                     ))}
                   </select>
                 </div>
-            </div>
-          );
-        })}
-      </div>
-
-
-
-
-
-
-      {/* Games / displays for date */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-bold">Games on {selectedDate || "—"}</h2>
-        <button onClick={() => setShowAddGame(true)}
-          className="px-3 py-2 bg-green-600 rounded hover:bg-green-700 text-sm">
-          + Add Game (Test Data)
-        </button>
-      </div>
-
-      {displaysForDate.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded p-6 text-center text-gray-500">
-          No games on this date. Try Sync Now or Add Game.
+              </div>
+            );
+          })}
         </div>
-      ) : (
-        <table className="w-full bg-gray-900 border border-gray-800 rounded overflow-hidden text-sm mb-8">
-          <thead className="bg-gray-800 text-left">
-            <tr>
-              <th className="p-2">Sport</th>
-              <th className="p-2">Type</th>
-              <th className="p-2">Opponent</th>
-              <th className="p-2">Kickoff</th>
-              <th className="p-2">Source</th>
-              <th className="p-2">Panel</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displaysForDate.map(d => {
-              const g = gameFor(d.sport);
-              return (
-                <tr key={d.id} className="border-t border-gray-800">
-                  <td className="p-2 font-medium">{d.sport}</td>
-                  <td className="p-2 text-gray-400">{d.display_type}</td>
-                  <td className="p-2">{g?.opponent || <span className="text-gray-600">—</span>}</td>
-                  <td className="p-2">{g?.kickoff ? new Date(g.kickoff).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" }) : <span className="text-gray-600">TBD</span>}</td>
-                  <td className="p-2">
-                    <span className={g?.source === "manual" ? "text-yellow-400 text-xs" : "text-gray-500 text-xs"}>{g?.source || "—"}</span>
-                  </td>
-                  <td className="p-2">
-                    {[1,2,3,4].filter(p => Array.from(new Map(displaysForDate.map(d => [d.id, d])).values()).find(x => x.id === d.id && x.control_room_id === p)).map(p =>
-                      <span key={p} className="mr-1 px-2 py-0.5 bg-gray-800 rounded text-xs">P{p}</span>
-                    )}
-                    {d.manual === 1 && <span className="ml-2 text-yellow-400 text-xs">manual</span>}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
 
-      {/* Danger zone */}
-      <div className="mt-8 border-t border-gray-800 pt-4">
-        <button onClick={() => setShowDanger(v => !v)}
-          className="text-red-400 text-sm hover:underline">
-          {showDanger ? "▲ hide" : "▼ show"} maintenance
-        </button>
-        {showDanger && (
-          <div className="mt-3 bg-red-950/30 border border-red-900 rounded p-4 flex flex-wrap gap-3 text-sm">
-            <button onClick={() => maintenance("clear-seed")}
-              className="px-3 py-2 bg-red-800 rounded hover:bg-red-900">
-              Clear Test Data (SEED-*)
-            </button>
-            <div className="flex items-center gap-2 bg-red-900/40 px-3 py-2 rounded">
-              <span>Clear shifts older than</span>
-              <input type="number" value={oldDays} onChange={e => setOldDays(Number(e.target.value))}
-                className="bg-gray-800 px-2 py-1 rounded w-16" min={1} />
-              <span>days</span>
-              <button onClick={() => maintenance("clear-old", { days: oldDays })}
-                className="px-2 py-1 bg-red-800 rounded hover:bg-red-900">go</button>
-            </div>
-            <button onClick={() => maintenance("clear-all")}
-              className="px-3 py-2 bg-red-800 rounded hover:bg-red-900">
-              Clear ALL Shifts
-            </button>
+        {/* Games / displays for date */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-baseline gap-2">
+            <h2 className="amdb-display text-base font-semibold uppercase tracking-wide text-[#d8d6d3]">Games</h2>
+            <span className="amdb-mono text-xs text-[#6b6b70]">{selectedDate || "—"}</span>
           </div>
-        )}
-      </div>
+          <button onClick={() => setShowAddGame(true)}
+            className="amdb-mono px-3 py-1.5 text-xs uppercase tracking-wide bg-[#16321f] border border-[#2b5236] text-[#8fd4a2] rounded-sm hover:bg-[#1b3d26] transition-colors">
+            + Add Game (Test Data)
+          </button>
+        </div>
 
-      {showAddGame && <AddGameModal
-        onClose={() => setShowAddGame(false)}
-        onDone={() => { setShowAddGame(false); loadAll(); }}
-        defaultDate={selectedDate}
-      />}
+        {displaysForDate.length === 0 ? (
+          <div className="bg-[#111113] border border-[#232326] rounded-sm p-8 text-center text-[#5f5f64] amdb-mono text-xs uppercase tracking-wide mb-10">
+            No games on this date. Try Sync Now or Add Game.
+          </div>
+        ) : (
+          <table className="w-full bg-[#111113] border border-[#232326] rounded-sm overflow-hidden text-sm mb-10 border-collapse">
+            <thead className="bg-[#18181b]">
+              <tr>
+                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Sport</th>
+                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Type</th>
+                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Opponent</th>
+                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Kickoff</th>
+                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Source</th>
+                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Panel</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displaysForDate.map(d => {
+                const g = gameFor(d.sport);
+                return (
+                  <tr key={d.id} className="border-t border-[#1c1c1f] hover:bg-[#151517] transition-colors">
+                    <td className="p-2.5 font-medium text-[#e7e5e2]">{d.sport}</td>
+                    <td className="p-2.5 text-[#8a8a8f] amdb-mono text-xs uppercase">{d.display_type}</td>
+                    <td className="p-2.5 text-[#b9b7b3]">{g?.opponent || <span className="text-[#47474d]">—</span>}</td>
+                    <td className="p-2.5 amdb-mono text-xs text-[#b9b7b3]">{g?.kickoff ? new Date(g.kickoff).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" }) : <span className="text-[#47474d]">TBD</span>}</td>
+                    <td className="p-2.5">
+                      <span className={"amdb-mono text-[10px] uppercase tracking-wide " + (g?.source === "manual" ? "text-[#c99a3e]" : "text-[#5f5f64]")}>{g?.source || "—"}</span>
+                    </td>
+                    <td className="p-2.5">
+                      {[1,2,3,4].filter(p => Array.from(new Map(displaysForDate.map(d => [d.id, d])).values()).find(x => x.id === d.id && x.control_room_id === p)).map(p =>
+                        <span key={p} className="amdb-mono mr-1 px-1.5 py-0.5 bg-[#1a1a1d] border border-[#2c2c30] rounded-sm text-[10px] text-[#b9b7b3]">P{p}</span>
+                      )}
+                      {d.manual === 1 && <span className="amdb-mono ml-2 text-[10px] uppercase tracking-wide text-[#c99a3e]">manual</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+
+        {/* Danger zone */}
+        <div className="mt-10 border-t border-[#232326] pt-5">
+          <button onClick={() => setShowDanger(v => !v)}
+            className="amdb-mono text-xs uppercase tracking-widest text-[#8f5757] hover:text-[#c96060] transition-colors">
+            {showDanger ? "▲ hide" : "▼ show"} maintenance
+          </button>
+          {showDanger && (
+            <div className="mt-3 bg-[#1a0d0d] border border-[#3d1414] rounded-sm p-4 flex flex-wrap gap-3 text-sm">
+              <button onClick={() => maintenance("clear-seed")}
+                className="amdb-mono px-3 py-2 text-xs uppercase tracking-wide bg-[#5a1414] border border-[#7a1f1f] rounded-sm hover:bg-[#6b1818] transition-colors">
+                Clear Test Data (SEED-*)
+              </button>
+              <div className="flex items-center gap-2 bg-[#2a1010] border border-[#4a1919] px-3 py-2 rounded-sm">
+                <span className="amdb-mono text-xs uppercase tracking-wide text-[#c9a3a3]">Clear shifts older than</span>
+                <input type="number" value={oldDays} onChange={e => setOldDays(Number(e.target.value))}
+                  className="amdb-mono bg-[#0a0a0a] border border-[#4a1919] px-2 py-1 rounded-sm w-16 text-center focus:outline-none" min={1} />
+                <span className="amdb-mono text-xs uppercase tracking-wide text-[#c9a3a3]">days</span>
+                <button onClick={() => maintenance("clear-old", { days: oldDays })}
+                  className="amdb-mono px-2.5 py-1 text-xs uppercase bg-[#5a1414] border border-[#7a1f1f] rounded-sm hover:bg-[#6b1818] transition-colors">go</button>
+              </div>
+              <button onClick={() => maintenance("clear-all")}
+                className="amdb-mono px-3 py-2 text-xs uppercase tracking-wide bg-[#5a1414] border border-[#7a1f1f] rounded-sm hover:bg-[#6b1818] transition-colors">
+                Clear ALL Shifts
+              </button>
+            </div>
+          )}
+        </div>
+
+        {showAddGame && <AddGameModal
+          onClose={() => setShowAddGame(false)}
+          onDone={() => { setShowAddGame(false); loadAll(); }}
+          defaultDate={selectedDate}
+        />}
+      </div>
     </div>
   );
 }
@@ -368,126 +432,134 @@ function AddGameModal({ onClose, onDone, defaultDate }: { onClose: () => void; o
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 w-full max-w-3xl m-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold">Add Game (Test Data)</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-white">✕</button>
-        </div>
-        <p className="text-xs text-gray-500 mb-4">
-          Creates fake shifts (prefixed <code>SEED-</code>) and game info. Use the danger zone to remove them later.
-        </p>
-
-        <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-          <label className="flex flex-col gap-1">
-            <span className="text-gray-400">Sport</span>
-            <select value={sport} onChange={e => setSport(e.target.value)}
-              className="bg-gray-800 px-2 py-1 rounded">
-              {SPORTS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-gray-400">Display Type</span>
-            <select value={display_type} onChange={e => setType(e.target.value as "broadcast" | "bigscreen")}
-              className="bg-gray-800 px-2 py-1 rounded">
-              <option value="broadcast">Broadcast</option>
-              <option value="bigscreen">Big Screen</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-gray-400">Date</span>
-            <input type="date" value={game_date} onChange={e => setGameDate(e.target.value)}
-              className="bg-gray-800 px-2 py-1 rounded" />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-gray-400">Opponent</span>
-            <input value={opponent} onChange={e => setOpponent(e.target.value)}
-              placeholder="e.g. LSU"
-              className="bg-gray-800 px-2 py-1 rounded" />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-gray-400">Crew Call</span>
-            <input type="time" value={crew_call} onChange={e => setCrewCall(e.target.value)}
-              className="bg-gray-800 px-2 py-1 rounded" />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-gray-400">Kickoff / Game Time</span>
-            <input type="time" value={kickoff} onChange={e => setKickoff(e.target.value)}
-              className="bg-gray-800 px-2 py-1 rounded" />
-          </label>
+    <div className="amdb-scope fixed inset-0 bg-black/75 flex items-center justify-center z-50" onClick={onClose}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        .amdb-display { font-family: 'Oswald', 'Arial Narrow', sans-serif; }
+        .amdb-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+      `}</style>
+      <div className="bg-[#111113] border border-[#2c2c30] rounded-sm w-full max-w-3xl m-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[#232326]">
+          <h3 className="amdb-display text-lg font-semibold uppercase tracking-wide text-[#d8d6d3]">Add Game <span className="text-[#6b6b70] text-sm normal-case tracking-normal">(Test Data)</span></h3>
+          <button onClick={onClose} className="text-[#6b6b70] hover:text-[#e7e5e2] text-lg leading-none">✕</button>
         </div>
 
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-bold text-sm">Crew</h4>
-          <div className="flex gap-2">
-            <button onClick={fillFromTemplate}
-              className="px-3 py-1 bg-purple-700 rounded hover:bg-purple-800 text-xs">
-              Fill from template
-            </button>
-            <button onClick={addRow}
-              className="px-3 py-1 bg-green-700 rounded hover:bg-green-800 text-xs">
-              + Add row
-            </button>
+        <div className="px-6 pt-4">
+          <p className="amdb-mono text-[11px] text-[#6b6b70] border-l-2 border-[#c99a3e] pl-3 mb-5">
+            Creates fake shifts (prefixed <span className="text-[#c99a3e]">SEED-</span>) and game info. Use the maintenance panel to remove them later.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 text-sm mb-5">
+            <label className="flex flex-col gap-1.5">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Sport</span>
+              <select value={sport} onChange={e => setSport(e.target.value)}
+                className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2.5 py-1.5 rounded-sm focus:outline-none focus:border-[#7a1f1f]">
+                {SPORTS.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Display Type</span>
+              <select value={display_type} onChange={e => setType(e.target.value as "broadcast" | "bigscreen")}
+                className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2.5 py-1.5 rounded-sm focus:outline-none focus:border-[#7a1f1f]">
+                <option value="broadcast">Broadcast</option>
+                <option value="bigscreen">Big Screen</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Date</span>
+              <input type="date" value={game_date} onChange={e => setGameDate(e.target.value)}
+                className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2.5 py-1.5 rounded-sm focus:outline-none focus:border-[#7a1f1f]" />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Opponent</span>
+              <input value={opponent} onChange={e => setOpponent(e.target.value)}
+                placeholder="e.g. LSU"
+                className="bg-[#0a0a0a] border border-[#2c2c30] px-2.5 py-1.5 rounded-sm placeholder:text-[#47474d] focus:outline-none focus:border-[#7a1f1f]" />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Crew Call</span>
+              <input type="time" value={crew_call} onChange={e => setCrewCall(e.target.value)}
+                className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2.5 py-1.5 rounded-sm focus:outline-none focus:border-[#7a1f1f]" />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Kickoff / Game Time</span>
+              <input type="time" value={kickoff} onChange={e => setKickoff(e.target.value)}
+                className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2.5 py-1.5 rounded-sm focus:outline-none focus:border-[#7a1f1f]" />
+            </label>
           </div>
+
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="amdb-mono text-[11px] uppercase tracking-widest text-[#6b6b70] font-semibold">Crew</h4>
+            <div className="flex gap-2">
+              <button onClick={fillFromTemplate}
+                className="amdb-mono px-3 py-1.5 text-[11px] uppercase tracking-wide bg-[#241a33] border border-[#3d2a54] text-[#c3a8e8] rounded-sm hover:bg-[#2c2040] transition-colors">
+                Fill from Template
+              </button>
+              <button onClick={addRow}
+                className="amdb-mono px-3 py-1.5 text-[11px] uppercase tracking-wide bg-[#16321f] border border-[#2b5236] text-[#8fd4a2] rounded-sm hover:bg-[#1b3d26] transition-colors">
+                + Add Row
+              </button>
+            </div>
+          </div>
+
+          <table className="w-full text-sm bg-[#0a0a0a] border border-[#232326] rounded-sm overflow-hidden mb-6">
+            <thead className="bg-[#18181b]">
+              <tr>
+                <th className="amdb-mono text-left p-2 w-56 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Position</th>
+                <th className="amdb-mono text-left p-2 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Name</th>
+                <th className="p-2 w-10"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {crew.map((row, i) => (
+                <tr key={i} className="border-t border-[#1c1c1f]">
+                  <td className="p-1.5">
+                    {row.custom ? (
+                      <div className="flex gap-1">
+                        <input value={row.position} onChange={e => updateRow(i, { position: e.target.value })}
+                          placeholder="Custom position"
+                          className="bg-[#111113] border border-[#2c2c30] px-2 py-1 rounded-sm w-full placeholder:text-[#47474d] focus:outline-none focus:border-[#7a1f1f]" />
+                        <button onClick={() => updateRow(i, { custom: false, position: "" })}
+                          className="text-xs text-[#6b6b70] hover:text-[#e7e5e2] px-1">↩</button>
+                      </div>
+                    ) : (
+                      <select value={row.position}
+                        onChange={e => {
+                          if (e.target.value === "__custom__") updateRow(i, { custom: true, position: "" });
+                          else updateRow(i, { position: e.target.value });
+                        }}
+                        className="amdb-mono bg-[#111113] border border-[#2c2c30] px-2 py-1 rounded-sm w-full text-xs focus:outline-none focus:border-[#7a1f1f]">
+                        <option value="">— select —</option>
+                        {positions.map(p => (
+                          <option key={p.ics_position} value={p.ics_position}>
+                            {p.short_label} ({p.ics_position})
+                          </option>
+                        ))}
+                        <option value="__custom__">+ Custom position…</option>
+                      </select>
+                    )}
+                  </td>
+                  <td className="p-1.5">
+                    <input value={row.name} onChange={e => updateRow(i, { name: e.target.value })}
+                      placeholder="Full name"
+                      className="bg-[#111113] border border-[#2c2c30] px-2 py-1 rounded-sm w-full placeholder:text-[#47474d] focus:outline-none focus:border-[#7a1f1f]" />
+                  </td>
+                  <td className="p-1.5 text-center">
+                    <button onClick={() => removeRow(i)}
+                      className="text-[#8f5757] hover:text-[#c96060]">✕</button>
+                  </td>
+                </tr>
+              ))}
+              {crew.length === 0 && (
+                <tr><td colSpan={3} className="p-4 text-center text-[#5f5f64] amdb-mono text-xs uppercase tracking-wide">No crew — click Add Row.</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <table className="w-full text-sm bg-gray-950 border border-gray-800 rounded overflow-hidden mb-4">
-          <thead className="bg-gray-800 text-left text-xs">
-            <tr>
-              <th className="p-2 w-56">Position</th>
-              <th className="p-2">Name</th>
-              <th className="p-2 w-10"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {crew.map((row, i) => (
-              <tr key={i} className="border-t border-gray-800">
-                <td className="p-1">
-                  {row.custom ? (
-                    <div className="flex gap-1">
-                      <input value={row.position} onChange={e => updateRow(i, { position: e.target.value })}
-                        placeholder="Custom position"
-                        className="bg-gray-800 px-2 py-1 rounded w-full" />
-                      <button onClick={() => updateRow(i, { custom: false, position: "" })}
-                        className="text-xs text-gray-400 hover:text-white">↩</button>
-                    </div>
-                  ) : (
-                    <select value={row.position}
-                      onChange={e => {
-                        if (e.target.value === "__custom__") updateRow(i, { custom: true, position: "" });
-                        else updateRow(i, { position: e.target.value });
-                      }}
-                      className="bg-gray-800 px-2 py-1 rounded w-full">
-                      <option value="">— select —</option>
-                      {positions.map(p => (
-                        <option key={p.ics_position} value={p.ics_position}>
-                          {p.short_label} ({p.ics_position})
-                        </option>
-                      ))}
-                      <option value="__custom__">+ Custom position…</option>
-                    </select>
-                  )}
-                </td>
-                <td className="p-1">
-                  <input value={row.name} onChange={e => updateRow(i, { name: e.target.value })}
-                    placeholder="Full name"
-                    className="bg-gray-800 px-2 py-1 rounded w-full" />
-                </td>
-                <td className="p-1 text-center">
-                  <button onClick={() => removeRow(i)}
-                    className="text-red-400 hover:text-red-300">✕</button>
-                </td>
-              </tr>
-            ))}
-            {crew.length === 0 && (
-              <tr><td colSpan={3} className="p-3 text-center text-gray-500">No crew — click Add row.</td></tr>
-            )}
-          </tbody>
-        </table>
-
-        <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">Cancel</button>
-          <button onClick={submit} className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 font-medium">Add Game</button>
+        <div className="flex justify-end gap-2 px-6 pb-6">
+          <button onClick={onClose} className="amdb-mono px-4 py-2 text-xs uppercase tracking-wide bg-[#1a1a1d] border border-[#2c2c30] rounded-sm hover:border-[#47474d] hover:bg-[#202023] transition-colors">Cancel</button>
+          <button onClick={submit} className="amdb-mono px-4 py-2 text-xs uppercase tracking-wide bg-[#500000] border border-[#7a1f1f] text-[#f3e6e6] rounded-sm hover:bg-[#631515] transition-colors">Add Game</button>
         </div>
       </div>
     </div>

@@ -9,9 +9,9 @@ export default function LogoutButton() {
         await fetch("/api/login", { method: "DELETE" });
         router.push("/");
       }}
-      className="text-sm text-gray-400 hover:text-white"
+      className="amdb-mono text-[11px] uppercase tracking-widest text-[#8a8a8f] hover:text-[#c96060] transition-colors"
     >
-      Sign out
+      Sign Out
     </button>
   );
 }
