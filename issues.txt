@@ -1,0 +1,5 @@
+- make the shift displays more 12mp themed (add logos and some color)
+- the overall theme of admin page need to look better
+- still need a non gameday page
+- add logos for teams on display
+- add buddy to football videoboard 
