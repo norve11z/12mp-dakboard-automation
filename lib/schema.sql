@@ -115,3 +115,13 @@ CREATE TABLE IF NOT EXISTS app_settings (
 );
 INSERT OR IGNORE INTO app_settings (key, value) VALUES ('display_date_override', NULL);
 
+CREATE TABLE IF NOT EXISTS panel_combo_rules (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  name         TEXT NOT NULL,
+  sports_key   TEXT NOT NULL UNIQUE,
+  priority     INTEGER NOT NULL DEFAULT 100,
+  panel_1      TEXT,
+  panel_2      TEXT,
+  panel_3      TEXT,
+  panel_4      TEXT
+);

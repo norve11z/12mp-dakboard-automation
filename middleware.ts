@@ -25,7 +25,7 @@ const PROTECTED_API_PREFIXES = [
   "/api/import", "/api/rebuild", "/api/sync", "/api/seed",
   "/api/assign", "/api/game-info", "/api/position-map",
   "/api/schedule-template", "/api/settings", "/api/maintenance",
-  "/api/refresh-schedules", "/api/add-game",
+  "/api/refresh-schedules", "/api/add-game", "/api/panel-combo-rules",
 ];
 
 export async function middleware(req: NextRequest) {

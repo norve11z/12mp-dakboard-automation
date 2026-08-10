@@ -190,49 +190,49 @@ export default function AdminDashboard() {
                 <a href={`/controlroom/${p}${override ? `?date=${override}` : ""}`}
                   target="_blank" className="text-blue-400 text-xs hover:underline">open ↗</a>
               </div>
-              {d ? (
-                <div className="p-3 flex-1 flex flex-col gap-1">
-                  <div className="text-lg font-bold leading-tight">{d.sport}</div>
-                  <div className="text-xs text-gray-400 uppercase">{d.display_type}</div>
-                  {g?.opponent && <div className="text-sm mt-1">vs {g.opponent}</div>}
-                  <div className="text-xs text-gray-400 mt-1 space-y-0.5">
-                    {d.crew_call && (
-                      <div>
-                        <span className="text-gray-500">Crew call:</span>{" "}
-                        {new Date(d.crew_call).toLocaleTimeString("en-US", {
-                          timeZone: "America/Chicago", hour: "numeric", minute: "2-digit",
-                        })}
-                      </div>
-                    )}
-                    {g?.kickoff && (
-                      <div>
-                        <span className="text-gray-500">Kickoff:</span>{" "}
-                        {new Date(g.kickoff).toLocaleTimeString("en-US", {
-                          timeZone: "America/Chicago", hour: "numeric", minute: "2-digit",
-                        })}
-                      </div>
-                    )}
-                    <div>
-                      <span className="text-gray-500">Crew:</span>{" "}
-                      {d.crew_count ?? 0} member{d.crew_count === 1 ? "" : "s"}
+                {d ? (
+                  <div className="p-3 flex-1 flex flex-col gap-1">
+                    <div className="text-lg font-bold leading-tight">{d.sport}</div>
+                    <div className="text-xs text-gray-400 uppercase">{d.display_type}</div>
+                    {g?.opponent && <div className="text-sm mt-1">vs {g.opponent}</div>}
+                    <div className="text-xs text-gray-400 mt-1">
+                      {d.crew_call && <div>Crew call: {new Date(d.crew_call).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })}</div>}
+                      {g?.kickoff && <div>Kickoff: {new Date(g.kickoff).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })}</div>}
+                      <div>Crew: {d.crew_count ?? 0}</div>
                     </div>
+                    <div className="flex-1" />
+                    <div className="text-xs text-gray-500 mt-1">{d.manual === 1 ? "manual" : "auto"}</div>
                   </div>
-                  <div className="flex-1" />
-                  <div className="flex items-center justify-between mt-2">
-                    {d.manual === 1
-                      ? <span className="text-xs text-yellow-400">manual</span>
-                      : <span className="text-xs text-gray-600">auto</span>}
-                    <button onClick={() => clearPanel(p, d.game_date)}
-                      className="text-xs text-red-400 hover:underline">unassign</button>
-                  </div>
+                ) : (
+                  <div className="p-3 flex-1 flex items-center justify-center text-gray-600 text-sm">empty</div>
+                )}
+                <div className="p-2 border-t border-gray-800">
+                  <select
+                    value={d?.id ?? ""}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (!val) clearPanel(p, selectedDate);
+                      else assignPanel(Number(val), p);
+                    }}
+                    className="bg-gray-800 px-2 py-1 rounded text-xs w-full"
+                  >
+                    <option value="">— empty —</option>
+                    {displaysForDate.map(x => (
+                      <option key={x.id} value={x.id}>
+                        {x.sport} {x.display_type === "bigscreen" ? "BS" : "BC"}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              ) : (
-                <div className="p-3 flex-1 flex items-center justify-center text-gray-600 text-sm">empty</div>
-              )}
             </div>
           );
         })}
       </div>
+
+
+
+
+
 
       {/* Games / displays for date */}
       <div className="flex items-center justify-between mb-3">
@@ -272,12 +272,9 @@ export default function AdminDashboard() {
                     <span className={g?.source === "manual" ? "text-yellow-400 text-xs" : "text-gray-500 text-xs"}>{g?.source || "—"}</span>
                   </td>
                   <td className="p-2">
-                    <select value={d.control_room_id ?? ""}
-                      onChange={e => assignPanel(d.id, Number(e.target.value))}
-                      className="bg-gray-800 px-2 py-1 rounded">
-                      <option value="">—</option>
-                      {[1, 2, 3, 4].map(p => <option key={p} value={p}>Panel {p}</option>)}
-                    </select>
+                    {[1,2,3,4].filter(p => Array.from(new Map(displaysForDate.map(d => [d.id, d])).values()).find(x => x.id === d.id && x.control_room_id === p)).map(p =>
+                      <span key={p} className="mr-1 px-2 py-0.5 bg-gray-800 rounded text-xs">P{p}</span>
+                    )}
                     {d.manual === 1 && <span className="ml-2 text-yellow-400 text-xs">manual</span>}
                   </td>
                 </tr>

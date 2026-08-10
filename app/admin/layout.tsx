@@ -9,6 +9,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Link href="/admin/shifts" className="hover:text-blue-400">Shifts</Link>
         <Link href="/admin/positions" className="hover:text-blue-400">Positions</Link>
         <Link href="/admin/schedule-times" className="hover:text-blue-400">Schedule Times</Link>
+        <Link href="/admin/panel-rules" className="hover:text-blue-400">Panel Rules</Link>
         <div className="flex-1" />
         <LogoutButton />
       </nav>

@@ -63,47 +63,56 @@ export async function autoAssign(date?: string) {
       sql: `SELECT * FROM displays WHERE game_date = ? ORDER BY ics_start`,
       args: [gd],
     })).rows;
-    const rules = (await db().execute(`SELECT * FROM assignment_rules ORDER BY priority ASC`)).rows;
+
     const manuals = (await db().execute({
-      sql: `SELECT a.control_room_id, a.display_id, d.sport, d.display_type
-            FROM assignments a JOIN displays d ON d.id = a.display_id
+      sql: `SELECT a.control_room_id, a.display_id FROM assignments a
             WHERE a.game_date = ? AND a.manual = 1`,
       args: [gd],
     })).rows;
-
-    const usedPanels = new Set<number>(manuals.map(m => Number(m.control_room_id)));
-    const assignedDisplayIds = new Set<number>(manuals.map(m => Number(m.display_id)));
+    const manualPanels = new Set(manuals.map(m => Number(m.control_room_id)));
 
     await db().execute({
       sql: `DELETE FROM assignments WHERE game_date = ? AND manual = 0`,
       args: [gd],
     });
 
+    // Try combo rule match
+    const sportsKey = [...new Set(displays.map(d => d.sport as string))].sort().join(",");
+    const rule = (await db().execute({
+      sql: `SELECT * FROM panel_combo_rules WHERE sports_key = ? ORDER BY priority ASC LIMIT 1`,
+      args: [sportsKey],
+    })).rows[0];
+
     let assigned = manuals.length;
 
-    for (const d of displays) {
-      const did = Number(d.id);
-      if (assignedDisplayIds.has(did)) continue;
-      const rule = rules.find(r => r.sport === d.sport && r.display_type === d.display_type);
-      if (rule && !usedPanels.has(Number(rule.control_room_id))) {
+    if (rule) {
+      for (const panel of [1, 2, 3, 4]) {
+        if (manualPanels.has(panel)) continue;
+        const slot = rule[`panel_${panel}`] as string | null;
+        if (!slot || slot === "none" || slot === "default") continue;
+        const [sport, dt] = slot.split(":");
+        const disp = displays.find(d => d.sport === sport && d.display_type === dt);
+        if (!disp) continue;
         await db().execute({
           sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 0)`,
-          args: [did, Number(rule.control_room_id), gd],
+          args: [Number(disp.id), panel, gd],
         });
-        usedPanels.add(Number(rule.control_room_id));
-        assignedDisplayIds.add(did);
         assigned++;
       }
-    }
-
-    const remainingPanels = [1, 2, 3, 4].filter(p => !usedPanels.has(p));
-    const remainingDisplays = displays.filter(d => !assignedDisplayIds.has(Number(d.id)));
-    for (let i = 0; i < remainingDisplays.length && i < remainingPanels.length; i++) {
-      await db().execute({
-        sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 0)`,
-        args: [Number(remainingDisplays[i].id), remainingPanels[i], gd],
-      });
-      assigned++;
+    } else {
+      // Fallback: fill panels 1..4 with displays in order
+      const usedPanels = new Set(manualPanels);
+      let panelIdx = 1;
+      for (const disp of displays) {
+        while (usedPanels.has(panelIdx) && panelIdx <= 4) panelIdx++;
+        if (panelIdx > 4) break;
+        await db().execute({
+          sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 0)`,
+          args: [Number(disp.id), panelIdx, gd],
+        });
+        usedPanels.add(panelIdx);
+        assigned++;
+      }
     }
 
     results[gd] = { assigned, unassigned: displays.length - assigned };
@@ -119,10 +128,8 @@ export async function manualAssign(displayId: number, controlRoomId: number) {
   })).rows[0];
   if (!row) throw new Error("Display not found");
   const gd = row.game_date as string;
-
   await db().batch([
     { sql: `DELETE FROM assignments WHERE control_room_id = ? AND game_date = ?`, args: [controlRoomId, gd] },
-    { sql: `DELETE FROM assignments WHERE display_id = ? AND game_date = ?`,     args: [displayId,     gd] },
     { sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 1)`, args: [displayId, controlRoomId, gd] },
   ]);
   return { ok: true };
