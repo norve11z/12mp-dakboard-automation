@@ -37,6 +37,7 @@ export default function AdminDashboard() {
   const [showAddGame, setShowAddGame] = useState(false);
   const [showDanger, setShowDanger] = useState(false);
   const [oldDays, setOldDays] = useState(7);
+  const [refreshingDakboard, setRefreshingDakboard] = useState(false);
 
   const loadAll = useCallback(async () => {
     const res = await fetch("/api/dashboard", {
@@ -73,6 +74,29 @@ export default function AdminDashboard() {
     } catch (e) { setSyncMsg("✗ " + String(e)); }
     setSyncing(false);
     await loadAll();
+  };
+
+  const refreshDakboard = async () => {
+    setRefreshingDakboard(true);
+    setSyncMsg("");
+
+    try {
+      const r = await fetch("/api/dakboard/refresh", {
+        method: "POST",
+      });
+
+      const data = await r.json();
+
+      setSyncMsg(
+        data.ok
+          ? "✓ DAKboard refresh requested"
+          : `✗ ${data.error}`
+      );
+    } catch (e) {
+      setSyncMsg("✗ DAKboard refresh failed: " + String(e));
+    } finally {
+      setRefreshingDakboard(false);
+    }
   };
 
   const runStep = async (label: string, url: string) => {
@@ -190,7 +214,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex-1" />
-
+            <button
+              onClick={refreshDakboard}
+              disabled={refreshingDakboard}
+              className="amdb-mono px-4 py-1.5 text-xs font-semibold uppercase tracking-wider bg-[#1a1a1d] border border-[#47474d] text-[#d8d6d3] rounded-sm hover:bg-[#242428] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {refreshingDakboard ? "Refreshing…" : "↻ Refresh DAKboard"}
+            </button>
             <button onClick={runSync} disabled={syncing}
               className="amdb-mono px-4 py-1.5 text-xs font-semibold uppercase tracking-wider bg-[#500000] border border-[#7a1f1f] text-[#f3e6e6] rounded-sm hover:bg-[#631515] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               {syncing ? "Syncing…" : "Sync Now"}
