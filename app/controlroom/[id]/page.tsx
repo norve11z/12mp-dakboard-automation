@@ -21,6 +21,34 @@ export default async function ControlRoomPage({
 
   const state = await getPanelState(panel, date);
 
+const crewRows =
+  (state.sport === "Football" ? 1 : 0) +
+  (state.crew?.filter((r) => r.names.length > 0).length ?? 0);
+
+const crewFontSize =
+  crewRows <= 5
+    ? "40px"
+    : crewRows === 6
+      ? "36px"
+      : crewRows === 7
+        ? "33px"
+        : crewRows === 8
+          ? "30px"
+          : crewRows === 9
+            ? "27px"
+            : crewRows === 10
+              ? "24px"
+              : crewRows === 11
+                ? "22px"
+                : "20px";
+
+const crewCellPadding =
+  crewRows <= 6
+    ? "4px"
+    : crewRows <= 8
+      ? "3px"
+      : "2px";
+
   return (
     <div className="control-room w-screen h-screen bg-black text-white flex flex-col overflow-hidden font-sans">
       <AutoRefresh intervalMs={12 * 60 * 60 * 1000} />
@@ -31,8 +59,8 @@ export default async function ControlRoomPage({
         }
 
         /* =========================================================
-           HEADER
-           ========================================================= */
+          HEADER
+          ========================================================= */
 
         .header-padding {
           padding-left: clamp(18px, 3vw, 36px);
@@ -76,7 +104,6 @@ export default async function ControlRoomPage({
           padding-bottom: clamp(8px, 0.85vh, 17px);
         }
 
-        /* Larger logos */
         .team-logo {
           width: clamp(90px, 10.5vh, 190px);
           height: clamp(90px, 10.5vh, 190px);
@@ -110,8 +137,8 @@ export default async function ControlRoomPage({
         }
 
         /* =========================================================
-           MAIN CONTENT
-           ========================================================= */
+          MAIN CONTENT
+          ========================================================= */
 
         .main-content {
           padding-left: clamp(18px, 2.7vw, 32px);
@@ -128,8 +155,8 @@ export default async function ControlRoomPage({
         }
 
         /* =========================================================
-           SECTION HEADERS
-           ========================================================= */
+          SECTION HEADERS
+          ========================================================= */
 
         .section-header {
           gap: clamp(7px, 0.65vh, 13px);
@@ -149,8 +176,8 @@ export default async function ControlRoomPage({
         }
 
         /* =========================================================
-           SCHEDULE
-           ========================================================= */
+          SCHEDULE
+          ========================================================= */
 
         .schedule-text {
           font-size: clamp(15px, 1.75vh, 33px);
@@ -165,38 +192,16 @@ export default async function ControlRoomPage({
         }
 
         /* =========================================================
-           CREW / PRODUCTION STAFF
-
-           This is intentionally larger than the schedule.
-           Reduced vertical padding lets the bigger names fit.
-           ========================================================= */
-
-        .crew-text {
-          font-size: clamp(18px, 2.15vh, 41px);
-        }
-
-        .crew-cell {
-          padding-top: clamp(3px, 0.38vh, 7px);
-          padding-bottom: clamp(3px, 0.38vh, 7px);
-          padding-left: clamp(9px, 1vw, 16px);
-          padding-right: clamp(9px, 1vw, 16px);
-          line-height: 1.08;
-        }
-
-        /* =========================================================
-           FOOTER
-           ========================================================= */
+          FOOTER
+          ========================================================= */
 
         .footer-accent {
           height: clamp(6px, 0.6vh, 12px);
         }
 
         /* =========================================================
-           1080 x 1920 VERTICAL DISPLAY
-
-           At the intended 1920px height, prioritize crew text
-           while keeping the total layout inside the screen.
-           ========================================================= */
+          1080 x 1920 VERTICAL DISPLAY
+          ========================================================= */
 
         @media (min-height: 1600px) {
           .header-padding {
@@ -244,29 +249,14 @@ export default async function ControlRoomPage({
             margin-top: 9px;
           }
 
-          /* Larger crew names / positions */
-          .crew-text {
-            font-size: 40px;
-          }
-
-          /* Tight rows so large text still fits */
-          .crew-cell {
-            padding-top: 4px;
-            padding-bottom: 4px;
-            line-height: 1.05;
-          }
-
           .section-title {
             font-size: 34px;
           }
         }
 
         /* =========================================================
-           SHORTER VERTICAL DISPLAYS
-
-           If the display is shorter than the intended 1920px,
-           automatically scale the content down slightly.
-           ========================================================= */
+          SHORTER VERTICAL DISPLAYS
+          ========================================================= */
 
         @media (max-height: 1600px) {
           .team-logo {
@@ -276,10 +266,6 @@ export default async function ControlRoomPage({
 
           .team-name {
             font-size: clamp(24px, 3vh, 48px);
-          }
-
-          .crew-text {
-            font-size: clamp(16px, 2vh, 32px);
           }
         }
 
@@ -297,15 +283,6 @@ export default async function ControlRoomPage({
             padding-top: 6px;
             padding-bottom: 6px;
           }
-
-          .crew-text {
-            font-size: 18px;
-          }
-
-          .crew-cell {
-            padding-top: 3px;
-            padding-bottom: 3px;
-          }
         }
       `}</style>
 
@@ -317,7 +294,6 @@ export default async function ControlRoomPage({
               HEADER
           ========================================================= */}
           <header className="w-full shrink-0">
-            {/* Top A&M / 12th Man bar */}
             <div className="h-[clamp(6px,0.6vh,12px)] w-full bg-[#500000]" />
 
             <div className="header-padding">
@@ -349,14 +325,12 @@ export default async function ControlRoomPage({
             ======================================================= */}
             <div className="matchup-margin">
               <div className="rounded-xl border border-[#551010] bg-gradient-to-b from-[#1e0000] via-[#100000] to-black overflow-hidden">
-                {/* Sport */}
                 <div className="matchup-top text-center">
                   <div className="sport-title inline-block font-black tracking-[0.3em] uppercase text-[#d0d2d4]">
                     {state.title}
                   </div>
                 </div>
 
-                {/* Teams / logos */}
                 <div className="flex items-center justify-center gap-3 matchup-teams">
                   {/* Texas A&M */}
                   <div className="w-[28%] flex justify-center items-center">
@@ -418,7 +392,6 @@ export default async function ControlRoomPage({
                   </div>
                 </div>
 
-                {/* Date */}
                 <div className="border-t border-[#481111] bg-[#160000] date-bar text-center">
                   <div className="date-text font-bold tracking-wide text-[#e2e2e2]">
                     {state.dateLabel}
@@ -473,15 +446,37 @@ export default async function ControlRoomPage({
               <SectionHeader title="Production Staff" />
 
               <div className="mt-1 h-full overflow-hidden rounded-lg border border-[#2b2b2b]">
-                <table className="w-full crew-text font-bold">
+                <table
+                  className="w-full font-bold"
+                  style={{
+                    fontSize: crewFontSize,
+                    lineHeight: 1.05,
+                  }}
+                >
                   <tbody>
                     {state.sport === "Football" && (
                       <tr className="border-b border-[#2b2b2b] bg-[#101010]">
-                        <td className="crew-cell text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top">
+                        <td
+                          className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
+                          style={{
+                            paddingTop: crewCellPadding,
+                            paddingBottom: crewCellPadding,
+                            paddingLeft: "9px",
+                            paddingRight: "9px",
+                          }}
+                        >
                           Game Producer
                         </td>
 
-                        <td className="crew-cell text-white align-top">
+                        <td
+                          className="text-white align-top"
+                          style={{
+                            paddingTop: crewCellPadding,
+                            paddingBottom: crewCellPadding,
+                            paddingLeft: "9px",
+                            paddingRight: "9px",
+                          }}
+                        >
                           Buddy
                         </td>
                       </tr>
@@ -494,11 +489,27 @@ export default async function ControlRoomPage({
                           key={i}
                           className="border-b border-[#2b2b2b] bg-[#101010] last:border-b-0"
                         >
-                          <td className="crew-cell text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top">
+                          <td
+                            className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
+                            style={{
+                              paddingTop: crewCellPadding,
+                              paddingBottom: crewCellPadding,
+                              paddingLeft: "9px",
+                              paddingRight: "9px",
+                            }}
+                          >
                             {row.short_label}
                           </td>
 
-                          <td className="crew-cell text-white align-top">
+                          <td
+                            className="text-white align-top"
+                            style={{
+                              paddingTop: crewCellPadding,
+                              paddingBottom: crewCellPadding,
+                              paddingLeft: "9px",
+                              paddingRight: "9px",
+                            }}
+                          >
                             {row.names.join("   |   ")}
                           </td>
                         </tr>
