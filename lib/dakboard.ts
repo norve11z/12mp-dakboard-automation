@@ -34,33 +34,36 @@ export async function refreshDakboardDisplays() {
         method: "PUT",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
         },
         body: new URLSearchParams({
           screen_id: screenId,
-        }),
+        }).toString(),
         cache: "no-store",
       });
 
       const responseText = await response.text();
+
+      console.log("DAKBOARD RESPONSE", {
+        deviceId,
+        screenId,
+        status: response.status,
+        contentType: response.headers.get("content-type"),
+        response: responseText,
+      });
 
       return {
         deviceId,
         screenId,
         success: response.ok,
         status: response.status,
+        contentType: response.headers.get("content-type"),
         response: responseText,
       };
     })
   );
 
-  const failed = results.filter((result) => !result.success);
-
-  if (failed.length > 0) {
-    throw new Error(
-      `DAKboard refresh failed for ${failed.length} display(s): ` +
-        failed.map((r) => `${r.deviceId} (${r.status})`).join(", ")
-    );
-  }
+  console.log("DAKBOARD RESULTS", results);
 
   return results;
 }
