@@ -365,6 +365,10 @@ export default async function ControlRoomPage({
                         src="https://a.espncdn.com/i/teamlogos/ncaa/500/245.png"
                         alt="Texas A&M"
                         className="max-w-full max-h-full object-contain"
+                        style={{
+                          filter:
+                            "drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white)",
+                        }}
                       />
                     </div>
                   </div>
