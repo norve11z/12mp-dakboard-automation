@@ -8,7 +8,7 @@ const TEAMS: Record<string, { league: string; teamId: number }> = {
   "Baseball":            { league: "baseball/college-baseball",             teamId: 245 },
   "Softball":            { league: "softball/college-softball",             teamId: 245 },
   "Volleyball":          { league: "volleyball/womens-college-volleyball",  teamId: 245 },
-  "Soccer":              { league: "soccer/usa.ncaa.w.1",                   teamId: 245 },
+  "Soccer":              { league: "soccer/usa.ncaa.w.1",                   teamId: 20491 },
 };
 
 interface EspnCompetitor {
