@@ -27,20 +27,20 @@ const crewRows =
 
 const crewFontSize =
   crewRows <= 5
-    ? "40px"
+    ? "55px"
     : crewRows === 6
-      ? "36px"
+      ? "55px"
       : crewRows === 7
-        ? "33px"
+        ? "55px"
         : crewRows === 8
-          ? "30px"
+          ? "55px"
           : crewRows === 9
-            ? "27px"
+            ? "50px"
             : crewRows === 10
-              ? "24px"
+              ? "45px"
               : crewRows === 11
-                ? "22px"
-                : "20px";
+                ? "40px"
+                : "35px";
 
 const crewCellPadding =
   crewRows <= 6
