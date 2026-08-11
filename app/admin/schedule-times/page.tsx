@@ -120,110 +120,296 @@ export default function ScheduleTimesPage() {
     load();
   };
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold mb-2">Schedule Times</h1>
-      <p className="text-gray-400 text-sm mb-4">
-        Rows are anchored to either <strong>Crew Call</strong> (earliest ICS shift start) or{" "}
-        <strong>Game Time</strong> (ESPN/manual). Offsets are signed durations
-        (e.g. <code>+2:30</code>, <code>-1:15</code>).
-      </p>
+return (
+  <div className="min-h-screen bg-[#0a0a0a] text-[#e7e5e2] font-sans">
+    <div className="h-1 w-full bg-[#500000]" />
 
-      <div className="flex gap-3 mb-4 items-center flex-wrap">
-        <select
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          className="bg-gray-800 px-3 py-2 rounded text-base"
-        >
-          {CATEGORIES.map(c => (
-            <option key={c.key} value={c.key}>{c.label}</option>
-          ))}
-        </select>
+    <div className="max-w-[1800px] mx-auto px-6 md:px-8 py-8">
+      {/* Header */}
+      <div className="mb-7">
+        <div className="amdb-mono text-[10px] font-bold tracking-[0.3em] text-[#6b6b70] uppercase mb-1">
+          Texas A&M Athletics
+        </div>
 
-        <select
-          value={copyFrom}
-          onChange={e => setCopyFrom(e.target.value)}
-          className="bg-gray-800 px-3 py-2 rounded text-sm"
-        >
-          <option value="">Copy from…</option>
-          {CATEGORIES.filter(c => c.key !== category).map(c => (
-            <option key={c.key} value={c.key}>{c.label}</option>
-          ))}
-        </select>
+        <h1 className="amdb-display text-3xl md:text-4xl font-semibold tracking-tight text-[#e7e5e2]">
+          Schedule Times
+        </h1>
 
-        <button
-          onClick={doCopy}
-          disabled={!copyFrom}
-          className="px-3 py-2 bg-purple-700 rounded hover:bg-purple-800 text-sm disabled:opacity-40"
-        >
-          Copy
-        </button>
+        <p className="amdb-mono text-xs text-[#6b6b70] mt-2 max-w-3xl leading-relaxed">
+          Rows are anchored to either{" "}
+          <span className="text-[#a7a9ac]">Crew Call</span>{" "}
+          (earliest ICS shift start) or{" "}
+          <span className="text-[#a7a9ac]">Game Time</span>{" "}
+          (ESPN/manual). Offsets are signed durations
+          (e.g. +2:30, -1:15).
+        </p>
       </div>
 
-      <table className="w-full bg-gray-900 rounded overflow-hidden text-sm">
-        <thead className="bg-gray-800 text-left">
-          <tr>
-            <th className="px-2 py-1">Label</th>
-            <th className="px-2 py-1 w-40">Anchor</th>
-            <th className="px-2 py-1 w-32">Offset</th>
-            <th className="px-2 py-1 w-28"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map(r => (
-            <EditableRow key={r.id} row={r} onSave={save} onDelete={del} />
-          ))}
-          {filtered.length === 0 && (
-            <tr>
-              <td colSpan={4} className="px-2 py-3 text-gray-500 text-center">
-                No rows yet — add one below.
-              </td>
-            </tr>
-          )}
+      {/* Controls */}
+      <div className="bg-[#111113] border border-[#232326] rounded-sm p-3 mb-5">
+        <div className="flex gap-2 items-center flex-wrap">
+          <select
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            className="
+              amdb-mono
+              bg-[#0a0a0a]
+              border border-[#2c2c30]
+              px-3 py-2
+              rounded-sm
+              text-xs
+              text-[#d8d6d3]
+              focus:outline-none
+              focus:border-[#7a1f1f]
+            "
+          >
+            {CATEGORIES.map(c => (
+              <option key={c.key} value={c.key}>
+                {c.label}
+              </option>
+            ))}
+          </select>
 
-          <tr className="border-t-2 border-blue-800 bg-gray-950">
-            <td className="px-2 py-1">
-              <input
-                value={newRow.label}
-                onChange={e => setNewRow({ ...newRow, label: e.target.value })}
-                placeholder="e.g. Crew Call"
-                className="bg-gray-800 px-2 py-1 rounded w-full"
-              />
-            </td>
-            <td className="px-2 py-1">
-              <select
-                value={newRow.ref}
-                onChange={e => setNewRow({ ...newRow, ref: e.target.value })}
-                className="bg-gray-800 px-2 py-1 rounded w-full"
-              >
-                {REFS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
-            </td>
-            <td className="px-2 py-1">
-              <input
-                value={newRow.offset}
-                onChange={e => setNewRow({ ...newRow, offset: e.target.value })}
-                placeholder="+0:00"
-                className="bg-gray-800 px-2 py-1 rounded w-full font-mono"
-              />
-            </td>
-            <td className="px-2 py-1">
-              <button
-                onClick={addNew}
-                className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 w-full text-sm"
-              >
-                Add
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          <select
+            value={copyFrom}
+            onChange={e => setCopyFrom(e.target.value)}
+            className="
+              amdb-mono
+              bg-[#0a0a0a]
+              border border-[#2c2c30]
+              px-3 py-2
+              rounded-sm
+              text-xs
+              text-[#d8d6d3]
+              focus:outline-none
+              focus:border-[#7a1f1f]
+            "
+          >
+            <option value="">Copy from…</option>
 
-      <p className="text-xs text-gray-500 mt-3">
-        Editing: <strong>{cat.label}</strong>. Rows sort by anchor (Crew Call first) then by offset.
-      </p>
+            {CATEGORIES
+              .filter(c => c.key !== category)
+              .map(c => (
+                <option key={c.key} value={c.key}>
+                  {c.label}
+                </option>
+              ))}
+          </select>
+
+          <button
+            onClick={doCopy}
+            disabled={!copyFrom}
+            className="
+              amdb-mono
+              px-3 py-2
+              bg-[#18181b]
+              border border-[#2c2c30]
+              rounded-sm
+              text-xs
+              uppercase
+              tracking-wide
+              text-[#b9b7b3]
+              hover:bg-[#242428]
+              hover:border-[#7a1f1f]
+              transition
+              disabled:opacity-40
+              disabled:hover:border-[#2c2c30]
+            "
+          >
+            Copy
+          </button>
+        </div>
+      </div>
+
+      {/* Schedule table */}
+      <div className="bg-[#111113] border border-[#232326] rounded-sm overflow-hidden">
+        <div className="px-4 py-2 bg-[#18181b] border-b border-[#232326] flex items-center justify-between">
+          <div className="amdb-mono text-[10px] uppercase tracking-[0.25em] text-[#6b6b70]">
+            Schedule Configuration
+          </div>
+
+          <div className="amdb-mono text-[10px] uppercase tracking-widest text-[#47474d]">
+            {cat.label}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-[#0d0d0f] text-left border-b border-[#2c2c30]">
+              <tr>
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  Label
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70] w-40">
+                  Anchor
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70] w-32">
+                  Offset
+                </th>
+
+                <th className="px-4 py-3 w-28" />
+              </tr>
+            </thead>
+
+            <tbody>
+              {filtered.map(r => (
+                <EditableRow
+                  key={r.id}
+                  row={r}
+                  onSave={save}
+                  onDelete={del}
+                />
+              ))}
+
+              {filtered.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="
+                      px-4
+                      py-10
+                      text-center
+                      amdb-mono
+                      text-[10px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[#47474d]
+                    "
+                  >
+                    No rows yet — add one below.
+                  </td>
+                </tr>
+              )}
+
+              {/* Add row */}
+              <tr className="border-t border-[#500000] bg-[#0d0d0f]">
+                <td className="px-4 py-3">
+                  <input
+                    value={newRow.label}
+                    onChange={e =>
+                      setNewRow({
+                        ...newRow,
+                        label: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. Crew Call"
+                    className="
+                      amdb-mono
+                      bg-[#0a0a0a]
+                      border border-[#2c2c30]
+                      px-3 py-2
+                      rounded-sm
+                      w-full
+                      text-xs
+                      text-[#d8d6d3]
+                      placeholder:text-[#47474d]
+                      focus:outline-none
+                      focus:border-[#7a1f1f]
+                    "
+                  />
+                </td>
+
+                <td className="px-4 py-3">
+                  <select
+                    value={newRow.ref}
+                    onChange={e =>
+                      setNewRow({
+                        ...newRow,
+                        ref: e.target.value,
+                      })
+                    }
+                    className="
+                      amdb-mono
+                      bg-[#0a0a0a]
+                      border border-[#2c2c30]
+                      px-3 py-2
+                      rounded-sm
+                      w-full
+                      text-xs
+                      text-[#d8d6d3]
+                      focus:outline-none
+                      focus:border-[#7a1f1f]
+                    "
+                  >
+                    {REFS.map(r => (
+                      <option key={r.value} value={r.value}>
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+
+                <td className="px-4 py-3">
+                  <input
+                    value={newRow.offset}
+                    onChange={e =>
+                      setNewRow({
+                        ...newRow,
+                        offset: e.target.value,
+                      })
+                    }
+                    placeholder="+0:00"
+                    className="
+                      amdb-mono
+                      bg-[#0a0a0a]
+                      border border-[#2c2c30]
+                      px-3 py-2
+                      rounded-sm
+                      w-full
+                      text-xs
+                      text-[#d8d6d3]
+                      placeholder:text-[#47474d]
+                      focus:outline-none
+                      focus:border-[#7a1f1f]
+                    "
+                  />
+                </td>
+
+                <td className="px-4 py-3">
+                  <button
+                    onClick={addNew}
+                    className="
+                      amdb-mono
+                      px-3 py-2
+                      bg-[#500000]
+                      border border-[#6b1616]
+                      rounded-sm
+                      w-full
+                      text-xs
+                      uppercase
+                      tracking-wide
+                      text-[#f0eeee]
+                      hover:bg-[#681010]
+                      transition
+                    "
+                  >
+                    Add
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Footer info */}
+      <div className="mt-3 flex items-center justify-between">
+        <p className="amdb-mono text-[9px] uppercase tracking-[0.2em] text-[#3f3f44]">
+          Editing: {cat.label}
+        </p>
+
+        <p className="amdb-mono text-[9px] uppercase tracking-[0.2em] text-[#3f3f44]">
+          Rows sort by anchor · then offset
+        </p>
+      </div>
     </div>
-  );
+
+    <div className="h-1 w-full bg-[#500000]" />
+  </div>
+);
+
 }
 
 function EditableRow({
@@ -259,46 +445,115 @@ function EditableRow({
     onSave({ ...row, label, ref, offset_minutes: mins });
   };
 
-  return (
-    <tr className="border-t border-gray-800">
-      <td className="px-2 py-1">
-        <input
-          value={label}
-          onChange={e => setLabel(e.target.value)}
-          className="bg-gray-800 px-2 py-1 rounded w-full"
-        />
-      </td>
-      <td className="px-2 py-1">
-        <select
-          value={ref}
-          onChange={e => setRef(e.target.value)}
-          className="bg-gray-800 px-2 py-1 rounded w-full"
-        >
-          {REFS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-        </select>
-      </td>
-      <td className="px-2 py-1">
-        <input
-          value={offset}
-          onChange={e => setOffset(e.target.value)}
-          className="bg-gray-800 px-2 py-1 rounded w-full font-mono"
-        />
-      </td>
-      <td className="px-2 py-1 flex gap-1">
+return (
+  <tr className="border-t border-[#232326] bg-[#111113] hover:bg-[#18181b] transition-colors">
+    <td className="px-4 py-2.5">
+      <input
+        value={label}
+        onChange={e => setLabel(e.target.value)}
+        className="
+          amdb-mono
+          bg-[#0a0a0a]
+          border border-[#2c2c30]
+          px-3 py-2
+          rounded-sm
+          w-full
+          text-xs
+          text-[#d8d6d3]
+          focus:outline-none
+          focus:border-[#7a1f1f]
+        "
+      />
+    </td>
+
+    <td className="px-4 py-2.5">
+      <select
+        value={ref}
+        onChange={e => setRef(e.target.value)}
+        className="
+          amdb-mono
+          bg-[#0a0a0a]
+          border border-[#2c2c30]
+          px-3 py-2
+          rounded-sm
+          w-full
+          text-xs
+          text-[#d8d6d3]
+          focus:outline-none
+          focus:border-[#7a1f1f]
+        "
+      >
+        {REFS.map(r => (
+          <option key={r.value} value={r.value}>
+            {r.label}
+          </option>
+        ))}
+      </select>
+    </td>
+
+    <td className="px-4 py-2.5">
+      <input
+        value={offset}
+        onChange={e => setOffset(e.target.value)}
+        className="
+          amdb-mono
+          bg-[#0a0a0a]
+          border border-[#2c2c30]
+          px-3 py-2
+          rounded-sm
+          w-full
+          text-xs
+          text-[#d8d6d3]
+          font-mono
+          focus:outline-none
+          focus:border-[#7a1f1f]
+        "
+      />
+    </td>
+
+    <td className="px-4 py-2.5">
+      <div className="flex gap-1">
         <button
           disabled={!dirty}
           onClick={doSave}
-          className="px-2 py-0.5 bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-30 text-xs"
+          className="
+            amdb-mono
+            px-3 py-1.5
+            bg-[#18181b]
+            border border-[#2c2c30]
+            rounded-sm
+            hover:bg-[#242428]
+            hover:border-[#7a1f1f]
+            disabled:opacity-30
+            text-[10px]
+            uppercase
+            tracking-wide
+            text-[#b9b7b3]
+            transition
+          "
         >
           Save
         </button>
+
         <button
           onClick={() => onDelete(row.id)}
-          className="px-2 py-0.5 bg-red-700 rounded hover:bg-red-800 text-xs"
+          className="
+            amdb-mono
+            px-2.5 py-1.5
+            bg-[#300000]
+            border border-[#500000]
+            rounded-sm
+            hover:bg-[#500000]
+            text-[10px]
+            text-[#c96060]
+            transition
+          "
         >
           ✕
         </button>
-      </td>
-    </tr>
-  );
+      </div>
+    </td>
+  </tr>
+);
+
 }

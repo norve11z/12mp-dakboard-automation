@@ -76,109 +76,358 @@ export default function PanelRulesPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-2">Panel Auto-Assign Rules</h1>
-      <p className="text-gray-400 text-sm mb-6">
-        Define which games/displays go on which panels when a specific combination of sports is happening that day.
-        Match is based on the exact set of sports with displays on the date.
-      </p>
+  <div className="min-h-screen bg-[#0a0a0a] text-[#e7e5e2] font-sans">
+    <div className="h-1 w-full bg-[#500000]" />
 
-      <div className="bg-gray-900 border border-gray-800 rounded p-4 mb-6 space-y-4">
-        <div className="flex gap-3 items-end flex-wrap">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-gray-400">Rule name</span>
-            <input value={name} onChange={e => setName(e.target.value)}
-              placeholder="e.g. Football only"
-              className="bg-gray-800 px-2 py-1 rounded w-64" />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-gray-400">Priority</span>
-            <input type="number" value={priority}
-              onChange={e => setPriority(Number(e.target.value))}
-              className="bg-gray-800 px-2 py-1 rounded w-20" />
-          </label>
-          <div className="text-xs text-gray-500">Lower number = tried first</div>
+    <div className="max-w-[1800px] mx-auto px-6 md:px-8 py-8">
+      {/* Header */}
+      <div className="mb-7">
+        <div className="amdb-mono text-[10px] font-bold tracking-[0.3em] text-[#6b6b70] uppercase mb-1">
+          Texas A&M Athletics
         </div>
 
+        <h1 className="amdb-display text-3xl md:text-4xl font-semibold tracking-tight text-[#e7e5e2]">
+          Panel Auto-Assign Rules
+        </h1>
+
+        <p className="amdb-mono text-xs text-[#6b6b70] mt-2 max-w-3xl leading-relaxed">
+          Define which games/displays go on which panels when a specific
+          combination of sports is happening that day. Match is based on the
+          exact set of sports with displays on the date.
+        </p>
+      </div>
+
+      {/* Rule editor */}
+      <div className="bg-[#111113] border border-[#232326] rounded-sm p-4 mb-6 space-y-5">
+        {/* Name / Priority */}
+        <div className="flex gap-3 items-end flex-wrap">
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="amdb-mono uppercase tracking-widest text-[#6b6b70]">
+              Rule name
+            </span>
+
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Football only"
+              className="
+                amdb-mono
+                bg-[#0a0a0a]
+                border border-[#2c2c30]
+                px-3 py-2
+                rounded-sm
+                w-64
+                text-xs
+                text-[#d8d6d3]
+                placeholder:text-[#47474d]
+                focus:outline-none
+                focus:border-[#7a1f1f]
+              "
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="amdb-mono uppercase tracking-widest text-[#6b6b70]">
+              Priority
+            </span>
+
+            <input
+              type="number"
+              value={priority}
+              onChange={e => setPriority(Number(e.target.value))}
+              className="
+                amdb-mono
+                bg-[#0a0a0a]
+                border border-[#2c2c30]
+                px-3 py-2
+                rounded-sm
+                w-20
+                text-xs
+                text-[#d8d6d3]
+                focus:outline-none
+                focus:border-[#7a1f1f]
+              "
+            />
+          </label>
+
+          <div className="amdb-mono text-[9px] uppercase tracking-widest text-[#47474d] pb-2">
+            Lower number = tried first
+          </div>
+        </div>
+
+        {/* Active sports */}
         <div>
-          <div className="text-sm text-gray-400 mb-1">Active sports (which sports have displays that day):</div>
+          <div className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70] mb-2">
+            Active sports
+            <span className="ml-2 text-[#47474d]">
+              — sports with displays that day
+            </span>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             {SPORTS.map(s => (
-              <button key={s} onClick={() => toggleSport(s)}
-                className={`px-3 py-1 rounded text-sm border ${
-                  activeSports.includes(s)
-                    ? "bg-blue-700 border-blue-500"
-                    : "bg-gray-800 border-gray-700 text-gray-400"
-                }`}>
+              <button
+                key={s}
+                onClick={() => toggleSport(s)}
+                className={`
+                  amdb-mono
+                  px-3 py-1.5
+                  rounded-sm
+                  text-[10px]
+                  uppercase
+                  tracking-wide
+                  border
+                  transition
+                  ${
+                    activeSports.includes(s)
+                      ? "bg-[#500000] border-[#7a1f1f] text-[#f0eeee]"
+                      : "bg-[#0a0a0a] border-[#2c2c30] text-[#6b6b70] hover:text-[#b9b7b3] hover:border-[#4a2020]"
+                  }
+                `}
+              >
                 {s}
               </button>
             ))}
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            sports_key: <code>{sportsKey || "(none)"}</code>
+
+          <div className="amdb-mono text-[9px] text-[#47474d] mt-2">
+            sports_key:{" "}
+            <code className="text-[#6b6b70]">
+              {sportsKey || "(none)"}
+            </code>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        {/* Panel assignments */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {[0, 1, 2, 3].map(i => (
-            <label key={i} className="flex flex-col gap-1 text-sm">
-              <span className="text-gray-400">Panel {i + 1}</span>
-              <select value={panels[i]}
+            <label key={i} className="flex flex-col gap-1 text-xs">
+              <span className="amdb-mono uppercase tracking-widest text-[#6b6b70]">
+                Panel {i + 1}
+              </span>
+
+              <select
+                value={panels[i]}
                 onChange={e => {
                   const next = [...panels] as typeof panels;
                   next[i] = e.target.value;
                   setPanels(next);
                 }}
-                className="bg-gray-800 px-2 py-1 rounded">
-                {slots.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                className="
+                  amdb-mono
+                  bg-[#0a0a0a]
+                  border border-[#2c2c30]
+                  px-3 py-2
+                  rounded-sm
+                  text-xs
+                  text-[#d8d6d3]
+                  focus:outline-none
+                  focus:border-[#7a1f1f]
+                "
+              >
+                {slots.map(o => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </select>
             </label>
           ))}
         </div>
 
-        <div className="flex justify-end">
-          <button onClick={() => save()}
-            className="px-4 py-2 bg-green-600 rounded hover:bg-green-700">
-            Save rule
+        {/* Save */}
+        <div className="flex justify-end pt-1">
+          <button
+            onClick={() => save()}
+            className="
+              amdb-mono
+              px-4 py-2
+              bg-[#500000]
+              border border-[#6b1616]
+              rounded-sm
+              hover:bg-[#681010]
+              text-xs
+              uppercase
+              tracking-wide
+              text-[#f0eeee]
+              transition
+            "
+          >
+            Save Rule
           </button>
         </div>
       </div>
 
-      <h2 className="text-xl font-bold mb-3">Existing rules</h2>
-      <table className="w-full bg-gray-900 border border-gray-800 rounded overflow-hidden text-sm">
-        <thead className="bg-gray-800 text-left">
-          <tr>
-            <th className="p-2 w-12">Prio</th>
-            <th className="p-2">Name</th>
-            <th className="p-2">Sports</th>
-            <th className="p-2">P1</th>
-            <th className="p-2">P2</th>
-            <th className="p-2">P3</th>
-            <th className="p-2">P4</th>
-            <th className="p-2 w-24"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rules.map(r => (
-            <tr key={r.id} className="border-t border-gray-800">
-              <td className="p-2 text-gray-500">{r.priority}</td>
-              <td className="p-2 font-medium">{r.name}</td>
-              <td className="p-2 text-xs font-mono text-gray-400">{r.sports_key}</td>
-              <td className="p-2 text-xs">{r.panel_1 || "—"}</td>
-              <td className="p-2 text-xs">{r.panel_2 || "—"}</td>
-              <td className="p-2 text-xs">{r.panel_3 || "—"}</td>
-              <td className="p-2 text-xs">{r.panel_4 || "—"}</td>
-              <td className="p-2 flex gap-1">
-                <button onClick={() => edit(r)} className="text-xs px-2 py-0.5 bg-blue-700 rounded hover:bg-blue-600">Edit</button>
-                <button onClick={() => del(r.id)} className="text-xs px-2 py-0.5 bg-red-700 rounded hover:bg-red-600">✕</button>
-              </td>
-            </tr>
-          ))}
-          {rules.length === 0 && (
-            <tr><td colSpan={8} className="p-3 text-center text-gray-500">No rules yet.</td></tr>
-          )}
-        </tbody>
-      </table>
+      {/* Existing rules */}
+      <div className="mb-3">
+        <h2 className="amdb-display text-xl font-semibold text-[#d8d6d3]">
+          Existing Rules
+        </h2>
+      </div>
+
+      <div className="bg-[#111113] border border-[#232326] rounded-sm overflow-hidden">
+        <div className="px-4 py-2 bg-[#18181b] border-b border-[#232326] flex items-center justify-between">
+          <div className="amdb-mono text-[10px] uppercase tracking-[0.25em] text-[#6b6b70]">
+            Auto-Assignment Configuration
+          </div>
+
+          <div className="amdb-mono text-[10px] uppercase tracking-widest text-[#47474d]">
+            {rules.length} {rules.length === 1 ? "Rule" : "Rules"}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-[#0d0d0f] text-left border-b border-[#2c2c30]">
+              <tr>
+                <th className="px-4 py-3 w-16 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  Prio
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  Name
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  Sports
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  P1
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  P2
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  P3
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  P4
+                </th>
+
+                <th className="px-4 py-3 w-28" />
+              </tr>
+            </thead>
+
+            <tbody>
+              {rules.map(r => (
+                <tr
+                  key={r.id}
+                  className="border-t border-[#232326] bg-[#111113] hover:bg-[#18181b] transition-colors"
+                >
+                  <td className="px-4 py-2.5 text-[#6b6b70] font-mono">
+                    {r.priority}
+                  </td>
+
+                  <td className="px-4 py-2.5 text-[#e7e5e2] font-medium">
+                    {r.name}
+                  </td>
+
+                  <td className="px-4 py-2.5">
+                    <span className="amdb-mono text-[10px] text-[#8f8f94]">
+                      {r.sports_key}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-2.5 text-[#b9b7b3]">
+                    {r.panel_1 || "—"}
+                  </td>
+
+                  <td className="px-4 py-2.5 text-[#b9b7b3]">
+                    {r.panel_2 || "—"}
+                  </td>
+
+                  <td className="px-4 py-2.5 text-[#b9b7b3]">
+                    {r.panel_3 || "—"}
+                  </td>
+
+                  <td className="px-4 py-2.5 text-[#b9b7b3]">
+                    {r.panel_4 || "—"}
+                  </td>
+
+                  <td className="px-4 py-2.5">
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => edit(r)}
+                        className="
+                          amdb-mono
+                          text-[10px]
+                          uppercase
+                          tracking-wide
+                          px-2.5 py-1.5
+                          bg-[#18181b]
+                          border border-[#2c2c30]
+                          rounded-sm
+                          hover:bg-[#242428]
+                          hover:border-[#7a1f1f]
+                          text-[#b9b7b3]
+                          transition
+                        "
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => del(r.id)}
+                        className="
+                          amdb-mono
+                          text-[10px]
+                          px-2.5 py-1.5
+                          bg-[#300000]
+                          border border-[#500000]
+                          rounded-sm
+                          hover:bg-[#500000]
+                          text-[#c96060]
+                          transition
+                        "
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+
+              {rules.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="
+                      px-4
+                      py-10
+                      text-center
+                      amdb-mono
+                      text-[10px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[#47474d]
+                    "
+                  >
+                    No rules yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-3 flex items-center justify-between">
+        <p className="amdb-mono text-[9px] uppercase tracking-[0.2em] text-[#3f3f44]">
+          Panel Assignment
+        </p>
+
+        <p className="amdb-mono text-[9px] uppercase tracking-[0.2em] text-[#3f3f44]">
+          Priority Rules
+        </p>
+      </div>
     </div>
-  );
+
+    <div className="h-1 w-full bg-[#500000]" />
+  </div>
+);
 }

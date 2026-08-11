@@ -133,118 +133,320 @@ export default function PositionsPage() {
   const mappedIcsPositions = new Set(filtered.map(f => f.ics_position));
   const unmapped = usedInCategory.filter(p => !mappedIcsPositions.has(p));
 
+return (
+  <div className="min-h-screen bg-[#0a0a0a] text-[#e7e5e2] font-sans">
+    <div className="h-1 w-full bg-[#500000]" />
 
+    <div className="max-w-[1800px] mx-auto px-6 md:px-8 py-8">
+      {/* Header */}
+      <div className="mb-7">
+        <div className="amdb-mono text-[10px] font-bold tracking-[0.3em] text-[#6b6b70] uppercase mb-1">
+          Texas A&M Athletics
+        </div>
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold mb-2">Position Labels</h1>
-      <p className="text-gray-400 text-sm mb-4">
-        Maps ICS position names to short labels. <strong>Default</strong> rows apply to every sport;
-        sport-specific rows override Default for that sport only. Use the arrows to reorder.
-      </p>
+        <h1 className="amdb-display text-3xl md:text-4xl font-semibold tracking-tight text-[#e7e5e2]">
+          Position Labels
+        </h1>
 
-      <div className="mb-4">
-        <select value={category} onChange={e => setCategory(e.target.value)}
-          className="bg-gray-800 px-3 py-2 rounded text-base">
-          {CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+        <p className="amdb-mono text-xs text-[#6b6b70] mt-2 max-w-3xl leading-relaxed">
+          Maps ICS position names to short labels. Default rows apply to every
+          sport; sport-specific rows override Default for that sport only.
+          Use the arrows to reorder.
+        </p>
+      </div>
+
+      {/* Category selector */}
+      <div className="bg-[#111113] border border-[#232326] rounded-sm p-3 mb-5">
+        <select
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          className="
+            amdb-mono
+            bg-[#0a0a0a]
+            border border-[#2c2c30]
+            px-3 py-2
+            rounded-sm
+            text-xs
+            text-[#d8d6d3]
+            focus:outline-none
+            focus:border-[#7a1f1f]
+          "
+        >
+          {CATEGORIES.map(c => (
+            <option key={c.key} value={c.key}>
+              {c.label}
+            </option>
+          ))}
         </select>
       </div>
 
+      {/* Copy defaults */}
       {cat.sport !== DEFAULT_KEY && (
-        <div className="mb-3">
-            <button
+        <div className="mb-4">
+          <button
             onClick={async () => {
-                if (!confirm(`Copy all Default ${typeLabel(cat.display_type)} positions into "${cat.label}"? Existing rows will be kept.`)) return;
-                const res = await fetch("/api/position-map/copy-defaults", {
+              if (
+                !confirm(
+                  `Copy all Default ${typeLabel(
+                    cat.display_type
+                  )} positions into "${cat.label}"? Existing rows will be kept.`
+                )
+              )
+                return;
+
+              const res = await fetch("/api/position-map/copy-defaults", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sport: cat.sport, display_type: cat.display_type }),
-                });
-                const data = await res.json();
-                alert(data.ok ? `Copied ${data.copied} positions.` : `Error: ${data.error}`);
-                load();
+                body: JSON.stringify({
+                  sport: cat.sport,
+                  display_type: cat.display_type,
+                }),
+              });
+
+              const data = await res.json();
+
+              alert(
+                data.ok
+                  ? `Copied ${data.copied} positions.`
+                  : `Error: ${data.error}`
+              );
+
+              load();
             }}
-            className="px-3 py-1 bg-purple-700 rounded hover:bg-purple-800 text-sm"
-            >
+            className="
+              amdb-mono
+              px-3 py-2
+              bg-[#18181b]
+              border border-[#2c2c30]
+              rounded-sm
+              hover:bg-[#242428]
+              hover:border-[#7a1f1f]
+              text-xs
+              uppercase
+              tracking-wide
+              text-[#b9b7b3]
+              transition
+            "
+          >
             Copy from Default {typeLabel(cat.display_type)}
-            </button>
+          </button>
         </div>
-        )}
+      )}
+
+      {/* Unmapped positions */}
       {unmapped.length > 0 && (
-        <div className="mb-3 bg-yellow-950/40 border border-yellow-800 rounded p-3 text-sm">
-          <div className="font-semibold text-yellow-300 mb-1">
-            ⚠ {unmapped.length} unmapped position{unmapped.length > 1 ? "s" : ""} used in imported shifts:
+        <div className="mb-5 bg-[#241c0d] border border-[#66500f] rounded-sm p-4">
+          <div className="amdb-mono text-xs font-semibold uppercase tracking-wide text-[#d6b84a] mb-2">
+            ⚠ {unmapped.length} unmapped position
+            {unmapped.length > 1 ? "s" : ""} used in imported shifts
           </div>
+
           <div className="flex flex-wrap gap-2">
             {unmapped.map(p => (
               <button
                 key={p}
-                onClick={() => setNewRow({ ics_position: p, short_label: "" })}
-                className="px-2 py-1 bg-yellow-900/50 hover:bg-yellow-900 rounded text-xs font-mono"
+                onClick={() =>
+                  setNewRow({
+                    ics_position: p,
+                    short_label: "",
+                  })
+                }
+                className="
+                  amdb-mono
+                  px-2 py-1.5
+                  bg-[#30260f]
+                  border border-[#66500f]
+                  hover:bg-[#3d3011]
+                  rounded-sm
+                  text-[10px]
+                  text-[#d6b84a]
+                  transition
+                "
                 title="Click to prefill the Add row"
               >
                 {p}
               </button>
             ))}
           </div>
-          <div className="text-xs text-gray-500 mt-2">
-            These positions appear in shifts but have no label mapping — they display with raw names. Click one to prefill.
+
+          <div className="amdb-mono text-[9px] text-[#7d7252] mt-3 uppercase tracking-wide">
+            These positions appear in shifts but have no label mapping.
+            They display with raw names. Click one to prefill.
           </div>
         </div>
       )}
-      <table className="w-full bg-gray-900 rounded overflow-hidden text-sm">
-        <thead className="bg-gray-800 text-left">
-          <tr>
-            <th className="px-2 py-1 w-16">Order</th>
-            <th className="px-2 py-1">ICS Position</th>
-            <th className="px-2 py-1">Short Label</th>
-            <th className="px-2 py-1 w-28"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((r, i) => (
-            <EditableRow
-              key={r.id}
-              row={r}
-              index={i}
-              total={filtered.length}
-              flashing={flashing === r.id}
-              onMove={move}
-              onSave={save}
-              onDelete={del}
-            />
-          ))}
-          {filtered.length === 0 && (
-            <tr><td colSpan={4} className="px-2 py-3 text-gray-500 text-center">No mappings yet — add one below.</td></tr>
-          )}
 
-          <tr className="border-t-2 border-blue-800 bg-gray-950">
-            <td className="px-2 py-1 text-center text-gray-500">new</td>
-            <td className="px-2 py-1">
-              <input value={newRow.ics_position}
-                onChange={e => setNewRow({ ...newRow, ics_position: e.target.value })}
-                placeholder="e.g. Assistant Director"
-                className="bg-gray-800 px-2 py-1 rounded w-full" />
-            </td>
-            <td className="px-2 py-1">
-              <input value={newRow.short_label}
-                onChange={e => setNewRow({ ...newRow, short_label: e.target.value })}
-                placeholder="e.g. AD"
-                className="bg-gray-800 px-2 py-1 rounded w-full" />
-            </td>
-            <td className="px-2 py-1">
-              <button onClick={addNew}
-                className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 w-full text-sm">Add</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      {/* Position table */}
+      <div className="bg-[#111113] border border-[#232326] rounded-sm overflow-hidden">
+        <div className="px-4 py-2 bg-[#18181b] border-b border-[#232326] flex items-center justify-between">
+          <div className="amdb-mono text-[10px] uppercase tracking-[0.25em] text-[#6b6b70]">
+            Position Mapping
+          </div>
 
-      <p className="text-xs text-gray-500 mt-3">
-        Editing: <strong>{sportLabel(cat.sport)}</strong> — <strong>{typeLabel(cat.display_type)}</strong>
-      </p>
+          <div className="amdb-mono text-[10px] uppercase tracking-widest text-[#47474d]">
+            {sportLabel(cat.sport)} · {typeLabel(cat.display_type)}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-[#0d0d0f] text-left border-b border-[#2c2c30]">
+              <tr>
+                <th className="px-4 py-3 w-20 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  Order
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  ICS Position
+                </th>
+
+                <th className="px-4 py-3 amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+                  Short Label
+                </th>
+
+                <th className="px-4 py-3 w-32" />
+              </tr>
+            </thead>
+
+            <tbody>
+              {filtered.map((r, i) => (
+                <EditableRow
+                  key={r.id}
+                  row={r}
+                  index={i}
+                  total={filtered.length}
+                  flashing={flashing === r.id}
+                  onMove={move}
+                  onSave={save}
+                  onDelete={del}
+                />
+              ))}
+
+              {filtered.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="
+                      px-4
+                      py-10
+                      text-center
+                      amdb-mono
+                      text-[10px]
+                      uppercase
+                      tracking-[0.2em]
+                      text-[#47474d]
+                    "
+                  >
+                    No mappings yet — add one below.
+                  </td>
+                </tr>
+              )}
+
+              {/* Add row */}
+              <tr className="border-t border-[#500000] bg-[#0d0d0f]">
+                <td className="px-4 py-3 text-center">
+                  <span className="amdb-mono text-[10px] uppercase tracking-wide text-[#47474d]">
+                    New
+                  </span>
+                </td>
+
+                <td className="px-4 py-3">
+                  <input
+                    value={newRow.ics_position}
+                    onChange={e =>
+                      setNewRow({
+                        ...newRow,
+                        ics_position: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. Assistant Director"
+                    className="
+                      amdb-mono
+                      bg-[#0a0a0a]
+                      border border-[#2c2c30]
+                      px-3 py-2
+                      rounded-sm
+                      w-full
+                      text-xs
+                      text-[#d8d6d3]
+                      placeholder:text-[#47474d]
+                      focus:outline-none
+                      focus:border-[#7a1f1f]
+                    "
+                  />
+                </td>
+
+                <td className="px-4 py-3">
+                  <input
+                    value={newRow.short_label}
+                    onChange={e =>
+                      setNewRow({
+                        ...newRow,
+                        short_label: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. AD"
+                    className="
+                      amdb-mono
+                      bg-[#0a0a0a]
+                      border border-[#2c2c30]
+                      px-3 py-2
+                      rounded-sm
+                      w-full
+                      text-xs
+                      text-[#d8d6d3]
+                      placeholder:text-[#47474d]
+                      focus:outline-none
+                      focus:border-[#7a1f1f]
+                    "
+                  />
+                </td>
+
+                <td className="px-4 py-3">
+                  <button
+                    onClick={addNew}
+                    className="
+                      amdb-mono
+                      px-3 py-2
+                      bg-[#500000]
+                      border border-[#6b1616]
+                      rounded-sm
+                      hover:bg-[#681010]
+                      w-full
+                      text-xs
+                      uppercase
+                      tracking-wide
+                      text-[#f0eeee]
+                      transition
+                    "
+                  >
+                    Add
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-3 flex items-center justify-between">
+        <p className="amdb-mono text-[9px] uppercase tracking-[0.2em] text-[#3f3f44]">
+          Editing: {sportLabel(cat.sport)} — {typeLabel(cat.display_type)}
+        </p>
+
+        <p className="amdb-mono text-[9px] uppercase tracking-[0.2em] text-[#3f3f44]">
+          Position Mapping
+        </p>
+      </div>
     </div>
-  );
+
+    <div className="h-1 w-full bg-[#500000]" />
+  </div>
+);
+
+
+
 }
 
 function EditableRow({
@@ -264,36 +466,136 @@ function EditableRow({
   useEffect(() => { setLabel(row.short_label); }, [row.short_label]);
 
   return (
-    <tr className={`border-t border-gray-800 transition-colors duration-300 ${flashing ? "bg-blue-950" : ""}`}>
-      <td className="px-2 py-1">
-        <div className="flex gap-1">
-          <button
-            onClick={() => onMove(index, -1)}
-            disabled={index === 0}
-            className="w-6 h-6 flex items-center justify-center bg-gray-800 rounded hover:bg-gray-700 disabled:opacity-20 disabled:cursor-not-allowed"
-            aria-label="Move up"
-          >▲</button>
-          <button
-            onClick={() => onMove(index, 1)}
-            disabled={index === total - 1}
-            className="w-6 h-6 flex items-center justify-center bg-gray-800 rounded hover:bg-gray-700 disabled:opacity-20 disabled:cursor-not-allowed"
-            aria-label="Move down"
-          >▼</button>
-        </div>
-      </td>
-      <td className="px-2 py-1 font-mono text-gray-400">{row.ics_position}</td>
-      <td className="px-2 py-1">
-        <input value={label}
-          onChange={e => setLabel(e.target.value)}
-          className="bg-gray-800 px-2 py-1 rounded w-full" />
-      </td>
-      <td className="px-2 py-1 flex gap-1">
-        <button disabled={!dirty}
-          onClick={() => onSave({ ...row, short_label: label })}
-          className="px-2 py-0.5 bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-30 text-xs">Save</button>
-        <button onClick={() => onDelete(row.id)}
-          className="px-2 py-0.5 bg-red-700 rounded hover:bg-red-800 text-xs">✕</button>
-      </td>
-    </tr>
-  );
+  <tr
+    className={`
+      border-t border-[#232326]
+      transition-colors duration-300
+      ${flashing ? "bg-[#241c0d]" : "bg-[#111113]"}
+      hover:bg-[#18181b]
+    `}
+  >
+    <td className="px-4 py-2.5">
+      <div className="flex items-center justify-center gap-1">
+        <button
+          onClick={() => onMove(index, -1)}
+          disabled={index === 0}
+          className="
+            w-6 h-6
+            flex items-center justify-center
+            bg-[#0a0a0a]
+            border border-[#2c2c30]
+            rounded-sm
+            hover:bg-[#242428]
+            hover:border-[#7a1f1f]
+            disabled:opacity-20
+            disabled:cursor-not-allowed
+            text-[9px]
+            text-[#a7a9ac]
+            transition
+          "
+          aria-label="Move up"
+        >
+          ▲
+        </button>
+
+        <button
+          onClick={() => onMove(index, 1)}
+          disabled={index === total - 1}
+          className="
+            w-6 h-6
+            flex items-center justify-center
+            bg-[#0a0a0a]
+            border border-[#2c2c30]
+            rounded-sm
+            hover:bg-[#242428]
+            hover:border-[#7a1f1f]
+            disabled:opacity-20
+            disabled:cursor-not-allowed
+            text-[9px]
+            text-[#a7a9ac]
+            transition
+          "
+          aria-label="Move down"
+        >
+          ▼
+        </button>
+      </div>
+    </td>
+
+    <td className="px-4 py-2.5">
+      <div className="amdb-mono text-xs text-[#d8d6d3]">
+        {row.ics_position}
+      </div>
+    </td>
+
+    <td className="px-4 py-2.5">
+      <input
+        value={label}
+        onChange={e => setLabel(e.target.value)}
+        className="
+          amdb-mono
+          bg-[#0a0a0a]
+          border border-[#2c2c30]
+          px-3 py-2
+          rounded-sm
+          w-full
+          text-xs
+          text-[#d8d6d3]
+          focus:outline-none
+          focus:border-[#7a1f1f]
+        "
+      />
+    </td>
+
+    <td className="px-4 py-2.5">
+      <div className="flex gap-1">
+        <button
+          disabled={!dirty}
+          onClick={() =>
+            onSave({
+              ...row,
+              short_label: label,
+            })
+          }
+          className="
+            amdb-mono
+            px-3 py-1.5
+            bg-[#18181b]
+            border border-[#2c2c30]
+            rounded-sm
+            hover:bg-[#242428]
+            hover:border-[#7a1f1f]
+            disabled:opacity-30
+            text-[10px]
+            uppercase
+            tracking-wide
+            text-[#b9b7b3]
+            transition
+          "
+        >
+          Save
+        </button>
+
+        <button
+          onClick={() => onDelete(row.id)}
+          className="
+            amdb-mono
+            px-2.5 py-1.5
+            bg-[#300000]
+            border border-[#500000]
+            rounded-sm
+            hover:bg-[#500000]
+            text-[10px]
+            text-[#c96060]
+            transition
+          "
+        >
+          ✕
+        </button>
+      </div>
+    </td>
+  </tr>
+);
+
+
 }
