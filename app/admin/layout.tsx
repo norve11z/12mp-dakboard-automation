@@ -16,7 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             12th Man Productions
           </span>
           <span className="amdb-mono text-[10px] uppercase tracking-[0.22em] text-[#65656b]">
-            Control Room Admin
+            PCR Panels
           </span>
         </Link>
 

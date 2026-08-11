@@ -82,10 +82,6 @@ export default function PanelRulesPage() {
     <div className="max-w-[1800px] mx-auto px-6 md:px-8 py-8">
       {/* Header */}
       <div className="mb-7">
-        <div className="amdb-mono text-[10px] font-bold tracking-[0.3em] text-[#6b6b70] uppercase mb-1">
-          Texas A&M Athletics
-        </div>
-
         <h1 className="amdb-display text-3xl md:text-4xl font-semibold tracking-tight text-[#e7e5e2]">
           Panel Auto-Assign Rules
         </h1>

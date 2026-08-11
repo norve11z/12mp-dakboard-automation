@@ -184,20 +184,6 @@ export default function AdminDashboard() {
 
         {/* Masthead + status bar */}
         <div className="sticky top-0 z-20 -mx-6 px-6 bg-[#0a0a0a]/97 backdrop-blur border-b border-[#3d1414]">
-          <div className="flex items-center justify-between pt-5 pb-3">
-            <div className="flex items-baseline gap-3">
-              <span className="amdb-display text-[19px] font-semibold uppercase tracking-wide text-[#c96060]">
-                12th Man Productions
-              </span>
-              <span className="amdb-mono text-[10px] uppercase tracking-[0.22em] text-[#65656b]">
-                Control Room / Scheduling
-              </span>
-            </div>
-            <div className="amdb-mono text-[10px] uppercase tracking-[0.18em] text-[#55555b]">
-              Texas A&amp;M Athletics
-            </div>
-          </div>
-
           <div className="flex items-center gap-7 text-sm border-t border-[#1c1c1f] py-3">
             <div className="flex items-baseline gap-2">
               <span className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Shifts</span>

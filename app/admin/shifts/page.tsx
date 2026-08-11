@@ -88,10 +88,6 @@ export default function ShiftsPage() {
         ======================================================= */}
         <div className="flex items-end justify-between mb-7">
           <div>
-            <div className="amdb-mono text-[10px] font-bold tracking-[0.3em] text-[#6b6b70] uppercase mb-1">
-              Texas A&M Athletics
-            </div>
-
             <h1 className="amdb-display text-3xl md:text-4xl font-semibold tracking-tight text-[#e7e5e2]">
               Shifts
             </h1>
