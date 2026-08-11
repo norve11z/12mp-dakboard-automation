@@ -1,6 +1,14 @@
 import { getPanelState } from "@/lib/display-state";
 import { notFound } from "next/navigation";
 import AutoRefresh from "./AutoRefresh";
+import VideoLoop from "./VideoLoop";
+import type { UpcomingGame } from "@/lib/display-state";
+
+const VIDEOS = [
+  "/videos/am-hype-1.mp4",
+  "/videos/am-hype-2.mp4",
+  "/videos/am-hype-3.mp4",
+];
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -284,10 +292,11 @@ const crewCellPadding =
             padding-bottom: 6px;
           }
         }
-      `}</style>
+      `
+      }</style>
 
       {!state.hasContent ? (
-        <Placeholder panel={panel} />
+        <Placeholder panel={panel} upcoming={state.upcoming || []} />
       ) : (
         <>
           {/* =========================================================
@@ -310,11 +319,11 @@ const crewCellPadding =
 
                 <div className="text-right">
                   <div className="panel-label font-bold tracking-[0.25em] text-[#85898e] uppercase">
-                    Production Staff
+                    Broadcast Staff
                   </div>
 
                   <div className="panel-number font-bold text-[#d0d2d4]">
-                    PANEL {panel}
+                    PCR {panel}
                   </div>
                 </div>
               </div>
@@ -332,47 +341,7 @@ const crewCellPadding =
                 </div>
 
                 <div className="flex items-center justify-center gap-3 matchup-teams">
-                  {/* Texas A&M */}
-                  <div className="w-[28%] flex justify-center items-center">
-                    <div className="team-logo flex items-center justify-center">
-                      <img
-                        src="https://a.espncdn.com/i/teamlogos/ncaa/500/245.png"
-                        alt="Texas A&M"
-                        className="max-w-full max-h-full object-contain"
-                        style={{
-                          filter:
-                            "drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white)",
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Matchup */}
-                  <div className="flex-1 text-center min-w-0">
-                    <div className="team-name font-black tracking-tight leading-none text-white">
-                      TEXAS A&M
-                    </div>
-
-                    {state.opponent && (
-                      <>
-                        <div className="flex items-center justify-center matchup-divider">
-                          <div className="h-[2px] w-8 bg-[#700000]" />
-
-                          <div className="vs-text font-black text-[#c4c6c8]">
-                            VS
-                          </div>
-
-                          <div className="h-[2px] w-8 bg-[#700000]" />
-                        </div>
-
-                        <div className="team-name font-black tracking-tight leading-none text-[#f5f5f5]">
-                          {state.opponent.toUpperCase()}
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Opponent logo */}
+                  {/* Opponent logo — LEFT */}
                   <div className="w-[28%] flex justify-center items-center">
                     {state.logoUrl ? (
                       <div className="team-logo flex items-center justify-center">
@@ -390,6 +359,48 @@ const crewCellPadding =
                       </div>
                     )}
                   </div>
+
+                  {/* Matchup */}
+                  <div className="flex-1 text-center min-w-0">
+                    {/* Opponent — TOP */}
+                    <div className="team-name font-black tracking-tight leading-none text-[#f5f5f5]">
+                      {state.opponent?.toUpperCase()}
+                    </div>
+
+                    {state.opponent && (
+                      <>
+                        <div className="flex items-center justify-center matchup-divider">
+                          <div className="h-[2px] w-8 bg-[#700000]" />
+
+                          <div className="vs-text font-black text-[#c4c6c8]">
+                            @
+                          </div>
+
+                          <div className="h-[2px] w-8 bg-[#700000]" />
+                        </div>
+
+                        {/* Texas A&M — BOTTOM */}
+                        <div className="team-name font-black tracking-tight leading-none text-white">
+                          TEXAS A&M
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Texas A&M logo — RIGHT */}
+                  <div className="w-[28%] flex justify-center items-center">
+                    <div className="team-logo flex items-center justify-center">
+                      <img
+                        src="https://a.espncdn.com/i/teamlogos/ncaa/500/245.png"
+                        alt="Texas A&M"
+                        className="max-w-full max-h-full object-contain"
+                        style={{
+                          filter:
+                            "drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white)",
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="border-t border-[#481111] bg-[#160000] date-bar text-center">
@@ -399,6 +410,8 @@ const crewCellPadding =
                 </div>
               </div>
             </div>
+
+
           </header>
 
           {/* =========================================================
@@ -552,26 +565,72 @@ function SectionHeader({ title }: { title: string }) {
    EMPTY PANEL
    =============================================================== */
 
-function Placeholder({ panel }: { panel: number }) {
+function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) {
+  const bySport = upcoming.reduce<Record<string, UpcomingGame[]>>((acc, g) => {
+    (acc[g.sport] ||= []).push(g);
+    return acc;
+  }, {});
+  const sports = Object.keys(bySport).sort();
+
+  const fmtDate = (d: string) => {
+    const [y, m, day] = d.split("-").map(Number);
+    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+  const fmtTime = (iso: string | null) => iso
+    ? new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })
+    : null;
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-black">
-      <div className="h-5 w-full bg-[#500000] absolute top-0 left-0" />
-
-      <div className="text-center">
-        <div className="text-sm font-bold tracking-[0.4em] text-gray-600 uppercase mb-4">
-          Texas A&M Athletics
-        </div>
-
-        <div className="text-7xl font-black tracking-tight text-gray-700">
-          PANEL {panel}
-        </div>
-
-        <div className="mt-6 text-2xl font-bold tracking-widest uppercase text-gray-600">
-          No event scheduled
-        </div>
+    <div className="w-full h-full flex flex-col bg-[#500000] text-white">
+      {/* Video header */}
+      <div className="w-full" style={{ height: "40%" }}>
+        <VideoLoop videos={VIDEOS} />
       </div>
 
-      <div className="h-5 w-full bg-[#500000] absolute bottom-0 left-0" />
+      {/* Brand strip */}
+      <div className="w-full py-4 flex items-center justify-center gap-4 border-y-4 border-white bg-[#3a0000]">
+        <span className="text-4xl font-black tracking-wider">TEXAS A&M</span>
+        <span className="text-2xl font-light text-gray-300">•</span>
+        <span className="text-3xl font-bold text-gray-200">12TH MAN PRODUCTIONS</span>
+      </div>
+
+      {/* Upcoming */}
+      <div className="flex-1 overflow-hidden px-8 py-6">
+        <div className="text-3xl font-black mb-4 tracking-wide">UPCOMING</div>
+        {sports.length === 0 ? (
+          <div className="text-2xl text-gray-300">No upcoming games scheduled.</div>
+        ) : (
+          <div className="grid grid-cols-2 gap-x-8 gap-y-5 overflow-hidden">
+            {sports.map(sport => (
+              <div key={sport}>
+                <div className="text-xl font-bold text-yellow-200 uppercase mb-2 border-b border-yellow-300/40 pb-1">
+                  {sport}
+                </div>
+                <ul className="space-y-2">
+                  {bySport[sport].slice(0, 4).map((g, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      {g.logo_url ? (
+                        <img src={g.logo_url} alt="" className="w-10 h-10 object-contain bg-white/10 rounded" />
+                      ) : (
+                        <div className="w-10 h-10 bg-white/10 rounded" />
+                      )}
+                      <div className="flex-1">
+                        <div className="text-lg font-bold leading-tight">
+                          vs {g.opponent || "TBD"}
+                        </div>
+                        <div className="text-sm text-gray-300">
+                          {fmtDate(g.game_date)}
+                          {fmtTime(g.kickoff) && ` • ${fmtTime(g.kickoff)}`}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

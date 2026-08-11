@@ -13,6 +13,15 @@ export interface ScheduleRow {
   time: string | null;
 }
 
+export interface UpcomingGame {
+  sport: string;
+  game_date: string;
+  opponent: string | null;
+  logo_url: string | null;
+  kickoff: string | null;
+  home_away?: string | null;
+}
+
 export interface DisplayState {
   panel: number;
   hasContent: boolean;
@@ -25,6 +34,7 @@ export interface DisplayState {
   dateLabel?: string;
   crew?: CrewRow[];
   schedule?: ScheduleRow[];
+  upcoming?: UpcomingGame[];
 }
 
 function formatName(full: string): string {
@@ -53,7 +63,22 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
     args: [panel, gd],
   })).rows[0];
 
-  if (!disp) return { panel, hasContent: false };
+  if (!disp) {
+    const upcoming = (await db().execute(`
+      SELECT sport, game_date, opponent, logo_url, kickoff
+      FROM game_info
+      WHERE game_date >= date('now')
+      ORDER BY game_date, sport
+      LIMIT 40
+    `)).rows.map(r => ({
+      sport: r.sport as string,
+      game_date: r.game_date as string,
+      opponent: (r.opponent as string) ?? null,
+      logo_url: (r.logo_url as string) ?? null,
+      kickoff: (r.kickoff as string) ?? null,
+    }));
+    return { panel, hasContent: false, upcoming };
+  }
   const sport = disp.sport as string;
   const display_type = disp.display_type as string;
   const game_date = disp.game_date as string;
