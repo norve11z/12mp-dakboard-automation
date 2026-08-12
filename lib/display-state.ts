@@ -41,7 +41,7 @@ function formatName(full: string): string {
   const parts = full.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].toUpperCase();
   const first = parts[0];
-  const lastInitial = parts[parts.length - 1][0];
+  const lastInitial = parts[parts.length - 1];
   return `${first} ${lastInitial}.`.toUpperCase();
 }
 

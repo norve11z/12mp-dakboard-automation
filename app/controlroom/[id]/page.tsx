@@ -523,7 +523,7 @@ const crewCellPadding =
                               paddingRight: "9px",
                             }}
                           >
-                            {row.names.join("   |   ")}
+                            {row.names.join("   &   ")}
                           </td>
                         </tr>
                       ))}
