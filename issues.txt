@@ -1,13 +1,7 @@
 - FIX 2 GAMES IN ONE DAY OR ADD FALLBACK
 
-- fix games modal just keeps adding games when selecting a game in a panel
-- fix panel to set back to auto instead of manual if it aligns correctly with what should be displayed ( or add a button to correct it back to that)
-- fix panel to not show multiple of the same games just becuase its on multiple panels. just the actual game(s)
-
-
 - shifts display order buggy not showing correct order in all sports or somehow filtering out soccer or 8/22
-
 
 - try to use google calender on the non gameday page
 
-- add engineers to pcr 2
+- add engineers to pcr 2 
