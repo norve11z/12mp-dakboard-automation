@@ -175,6 +175,14 @@ const displaysForDate = displays.filter(
   d => d.game_date === selectedDate
 );
 
+// One entry per actual display.
+// The dashboard query can return the same display multiple
+// times because it joins against assignments.
+const uniqueDisplaysForDate = Array.from(
+  new Map(displaysForDate.map(d => [d.id, d])).values()
+);
+
+
 const panelsForGame = (game: any) => {
   const gameDisplays = displaysForDate.filter(
     d => d.sport === game.sport
@@ -386,7 +394,7 @@ const panelsForGame = (game: any) => {
                     className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2 py-1.5 rounded-sm text-xs w-full focus:outline-none focus:border-[#7a1f1f]"
                   >
                     <option value="">— empty —</option>
-                    {displaysForDate.map(x => (
+                    {uniqueDisplaysForDate.map(x => (
                       <option key={x.id} value={x.id}>
                         {x.sport} {x.display_type === "bigscreen" ? "BS" : "BC"}
                       </option>
@@ -539,46 +547,6 @@ const panelsForGame = (game: any) => {
     </tbody>
   </table>
 )}
-        {displaysForDate.length === 0 ? (
-          <div className="bg-[#111113] border border-[#232326] rounded-sm p-8 text-center text-[#5f5f64] amdb-mono text-xs uppercase tracking-wide mb-10">
-            No games on this date. Try Sync Now or Add Game.
-          </div>
-        ) : (
-          <table className="w-full bg-[#111113] border border-[#232326] rounded-sm overflow-hidden text-sm mb-10 border-collapse">
-            <thead className="bg-[#18181b]">
-              <tr>
-                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Sport</th>
-                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Type</th>
-                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Opponent</th>
-                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Kickoff</th>
-                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Source</th>
-                <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">Panel</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displaysForDate.map(d => {
-                const g = gameFor(d.sport);
-                return (
-                  <tr key={d.id} className="border-t border-[#1c1c1f] hover:bg-[#151517] transition-colors">
-                    <td className="p-2.5 font-medium text-[#e7e5e2]">{d.sport}</td>
-                    <td className="p-2.5 text-[#8a8a8f] amdb-mono text-xs uppercase">{d.display_type}</td>
-                    <td className="p-2.5 text-[#b9b7b3]">{g?.opponent || <span className="text-[#47474d]">—</span>}</td>
-                    <td className="p-2.5 amdb-mono text-xs text-[#b9b7b3]">{g?.kickoff ? new Date(g.kickoff).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" }) : <span className="text-[#47474d]">TBD</span>}</td>
-                    <td className="p-2.5">
-                      <span className={"amdb-mono text-[10px] uppercase tracking-wide " + (g?.source === "manual" ? "text-[#c99a3e]" : "text-[#5f5f64]")}>{g?.source || "—"}</span>
-                    </td>
-                    <td className="p-2.5">
-                      {[1,2,3,4].filter(p => Array.from(new Map(displaysForDate.map(d => [d.id, d])).values()).find(x => x.id === d.id && x.control_room_id === p)).map(p =>
-                        <span key={p} className="amdb-mono mr-1 px-1.5 py-0.5 bg-[#1a1a1d] border border-[#2c2c30] rounded-sm text-[10px] text-[#b9b7b3]">P{p}</span>
-                      )}
-                      {d.manual === 1 && <span className="amdb-mono ml-2 text-[10px] uppercase tracking-wide text-[#c99a3e]">manual</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
 
         {/* Danger zone */}
         <div className="mt-10 border-t border-[#232326] pt-5">
