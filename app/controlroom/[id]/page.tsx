@@ -52,9 +52,9 @@ const crewFontSize =
 
 const crewCellPadding =
   crewRows <= 6
-    ? "6px"
+    ? "8px"
     : crewRows <= 8
-      ? "4px"
+      ? "6px"
       : "2px";
 
   return (
@@ -523,7 +523,9 @@ const crewCellPadding =
                               paddingRight: "9px",
                             }}
                           >
-                            {row.names.join("   &   ")}
+                            {row.names.map((name, nameIndex) => (
+                              <div key={nameIndex}>{name}</div>
+                            ))}
                           </td>
                         </tr>
                       ))}
