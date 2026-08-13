@@ -42,7 +42,7 @@ function formatName(full: string): string {
   if (parts.length === 1) return parts[0].toUpperCase();
   const first = parts[0];
   const lastInitial = parts[parts.length - 1];
-  return `${first} ${lastInitial}.`.toUpperCase();
+  return `${first} ${lastInitial}`.toUpperCase();
 }
 
 

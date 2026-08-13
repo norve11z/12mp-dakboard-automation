@@ -60,6 +60,9 @@ export default function AdminDashboard() {
     );
   }, []);
 
+
+
+
   useEffect(() => {
     void loadAll();
   }, [loadAll]);
@@ -147,6 +150,58 @@ export default function AdminDashboard() {
     await loadAll();
   };
 
+  const resetAllToAuto = async () => {
+  if (!selectedDate) return;
+
+  const res = await fetch("/api/auto-assign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date: selectedDate }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error || `Auto-assign failed: ${res.status}`);
+  }
+
+  await loadAll();
+};
+
+const gamesForDate = games.filter(
+  g => g.game_date === selectedDate
+);
+
+const displaysForDate = displays.filter(
+  d => d.game_date === selectedDate
+);
+
+const panelsForGame = (game: any) => {
+  const gameDisplays = displaysForDate.filter(
+    d => d.sport === game.sport
+  );
+
+  const bigscreenPanels = gameDisplays
+    .filter(
+      d =>
+        d.display_type === "bigscreen" &&
+        d.control_room_id
+    )
+    .map(d => Number(d.control_room_id));
+
+  const broadcastPanels = gameDisplays
+    .filter(
+      d =>
+        d.display_type === "broadcast" &&
+        d.control_room_id
+    )
+    .map(d => Number(d.control_room_id));
+
+  return {
+    bigscreen: [...new Set(bigscreenPanels)].sort(),
+    broadcast: [...new Set(broadcastPanels)].sort(),
+  };
+};
+
   const maintenance = async (action: string, extra: Record<string, unknown> = {}) => {
     if (!confirm(`Run "${action}"? This cannot be undone.`)) return;
     const r = await fetch("/api/maintenance", {
@@ -158,9 +213,6 @@ export default function AdminDashboard() {
     await loadAll();
   };
 
-  const dateOptions = Array.from(new Set(displays.map(d => d.game_date))).sort();
-  const displaysForDate = displays.filter(d => d.game_date === selectedDate);
-  const gamesForDate = games.filter(g => g.game_date === selectedDate);
   const gameFor = (sport: string) => gamesForDate.find(g => g.sport === sport);
   const displayFor = (panel: number) => displaysForDate.find(d => d.control_room_id === panel);
 
@@ -271,9 +323,23 @@ export default function AdminDashboard() {
         </div>
 
         {/* Panel previews */}
-        <div className="flex items-baseline gap-2 mt-9 mb-3">
-          <h2 className="amdb-display text-base font-semibold uppercase tracking-wide text-[#d8d6d3]">Panels</h2>
-          <span className="amdb-mono text-xs text-[#6b6b70]">{selectedDate || "—"}</span>
+        <div className="flex items-center justify-between mt-9 mb-3">
+          <div className="flex items-baseline gap-2">
+            <h2 className="amdb-display text-base font-semibold uppercase tracking-wide text-[#d8d6d3]">
+              Panels
+            </h2>
+            <span className="amdb-mono text-xs text-[#6b6b70]">
+              {selectedDate || "—"}
+            </span>
+          </div>
+
+          <button
+            onClick={resetAllToAuto}
+            disabled={!selectedDate}
+            className="amdb-mono px-3 py-1.5 text-xs uppercase tracking-wide bg-[#211b13] border border-[#59431f] text-[#c99a3e] rounded-sm hover:bg-[#2b2317] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            Auto
+          </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
           {[1, 2, 3, 4].map(p => {
@@ -333,17 +399,146 @@ export default function AdminDashboard() {
         </div>
 
         {/* Games / displays for date */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-baseline gap-2">
-            <h2 className="amdb-display text-base font-semibold uppercase tracking-wide text-[#d8d6d3]">Games</h2>
-            <span className="amdb-mono text-xs text-[#6b6b70]">{selectedDate || "—"}</span>
-          </div>
-          <button onClick={() => setShowAddGame(true)}
-            className="amdb-mono px-3 py-1.5 text-xs uppercase tracking-wide bg-[#16321f] border border-[#2b5236] text-[#8fd4a2] rounded-sm hover:bg-[#1b3d26] transition-colors">
-            + Add Game (Test Data)
-          </button>
-        </div>
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-baseline gap-2">
+        <h2 className="amdb-display text-base font-semibold uppercase tracking-wide text-[#d8d6d3]">
+          Games
+        </h2>
+        <span className="amdb-mono text-xs text-[#6b6b70]">
+          {selectedDate || "—"}
+        </span>
+      </div>
 
+      <button
+        onClick={() => setShowAddGame(true)}
+        className="amdb-mono px-3 py-1.5 text-xs uppercase tracking-wide bg-[#16321f] border border-[#2b5236] text-[#8fd4a2] rounded-sm hover:bg-[#1b3d26] transition-colors"
+      >
+        + Add Game (Test Data)
+      </button>
+    </div>
+
+    {gamesForDate.length === 0 ? (
+      <div className="bg-[#111113] border border-[#232326] rounded-sm p-8 text-center text-[#5f5f64] amdb-mono text-xs uppercase tracking-wide mb-10">
+        No games on this date. Try Sync Now or Add Game.
+      </div>
+    ) : (
+      <table className="w-full bg-[#111113] border border-[#232326] rounded-sm overflow-hidden text-sm mb-10 border-collapse">
+        <thead className="bg-[#18181b]">
+          <tr>
+            <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">
+              Sport
+            </th>
+
+            <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">
+              Opponent
+            </th>
+
+            <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">
+              Kickoff
+            </th>
+
+            <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">
+              Source
+            </th>
+
+            <th className="amdb-mono text-left p-2.5 text-[10px] uppercase tracking-widest text-[#6b6b70] font-medium">
+              Panels
+            </th>
+          </tr>
+        </thead>
+
+    <tbody>
+      {gamesForDate.map(game => {
+        const panels = panelsForGame(game);
+
+        return (
+          <tr
+            key={`${game.sport}-${game.game_date}`}
+            className="border-t border-[#1c1c1f] hover:bg-[#151517] transition-colors"
+          >
+            <td className="p-2.5 font-medium text-[#e7e5e2]">
+              {game.sport}
+            </td>
+
+            <td className="p-2.5 text-[#b9b7b3]">
+              {game.opponent || (
+                <span className="text-[#47474d]">—</span>
+              )}
+            </td>
+
+            <td className="p-2.5 amdb-mono text-xs text-[#b9b7b3]">
+              {game.kickoff ? (
+                new Date(game.kickoff).toLocaleTimeString("en-US", {
+                  timeZone: "America/Chicago",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              ) : (
+                <span className="text-[#47474d]">TBD</span>
+              )}
+            </td>
+
+            <td className="p-2.5">
+              <span
+                className={
+                  "amdb-mono text-[10px] uppercase tracking-wide " +
+                  (game.source === "manual"
+                    ? "text-[#c99a3e]"
+                    : "text-[#5f5f64]")
+                }
+              >
+                {game.source || "—"}
+              </span>
+            </td>
+
+            <td className="p-2.5">
+              <div className="flex flex-wrap gap-1.5">
+                {panels.bigscreen.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="amdb-mono text-[9px] uppercase tracking-wide text-[#6b6b70] mr-0.5">
+                      BS
+                    </span>
+
+                    {panels.bigscreen.map(panel => (
+                      <span
+                        key={`bs-${panel}`}
+                        className="amdb-mono px-1.5 py-0.5 bg-[#1a1a1d] border border-[#2c2c30] rounded-sm text-[10px] text-[#b9b7b3]"
+                      >
+                        P{panel}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {panels.broadcast.length > 0 && (
+                  <div className="flex items-center gap-1 ml-2">
+                    <span className="amdb-mono text-[9px] uppercase tracking-wide text-[#6b6b70] mr-0.5">
+                      BC
+                    </span>
+
+                    {panels.broadcast.map(panel => (
+                      <span
+                        key={`bc-${panel}`}
+                        className="amdb-mono px-1.5 py-0.5 bg-[#1a1a1d] border border-[#2c2c30] rounded-sm text-[10px] text-[#b9b7b3]"
+                      >
+                        P{panel}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {panels.bigscreen.length === 0 &&
+                  panels.broadcast.length === 0 && (
+                    <span className="text-[#47474d]">—</span>
+                  )}
+              </div>
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+)}
         {displaysForDate.length === 0 ? (
           <div className="bg-[#111113] border border-[#232326] rounded-sm p-8 text-center text-[#5f5f64] amdb-mono text-xs uppercase tracking-wide mb-10">
             No games on this date. Try Sync Now or Add Game.
