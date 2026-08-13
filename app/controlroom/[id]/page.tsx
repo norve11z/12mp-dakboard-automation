@@ -43,11 +43,11 @@ const crewFontSize =
         : crewRows === 8
           ? "45px"
           : crewRows === 9
-            ? "40px"
+            ? "45px"
             : crewRows === 10
               ? "45px"
-              : crewRows === 11
-                ? "40px"
+              : crewRows <= 17
+                ? "45px"
                 : "35px";
 
 const crewCellPadding =
@@ -631,50 +631,52 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                 key={day.iso}
                 className={`
                   relative rounded-md border overflow-hidden flex flex-col
-                  ${isToday ? "border-[#8a0000] bg-[#1a0000]" : "border-[#232323] bg-[#131313]"}
+                  ${isToday ? "border-[#8a0000] bg-[#0a0000]" : "border-[#1a1a1a] bg-[#050505]"}
                 `}
               >
                 {/* Date header */}
-                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#232323]">
+                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#1a1a1a]">
                   <div className="flex items-baseline gap-1.5">
-                    <span className={`text-lg font-black leading-none ${isToday ? "text-white" : "text-gray-200"}`}>
+                    <span className={`text-2xl font-black leading-none ${isToday ? "text-white" : "text-gray-200"}`}>
                       {day.date.getDate()}
                     </span>
                     {isFirstOfMonth && (
-                      <span className="text-[9px] font-bold tracking-widest uppercase text-[#ffd21a]">
+                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#ffd21a]">
                         {monthName(day.date)}
                       </span>
                     )}
                   </div>
                   {isToday && (
-                    <span className="text-[8px] font-black tracking-widest uppercase text-[#ff6b6b]">
+                    <span className="text-[10px] font-black tracking-widest uppercase text-[#ff6b6b]">
                       Today
                     </span>
                   )}
                 </div>
 
-                {/* Games */}
-                <div className="flex-1 min-h-0 overflow-hidden px-1.5 py-1 space-y-1">
-                  {day.games.map((g, gi) => (
+                {/* Games (max 2) */}
+                <div className="flex-1 min-h-0 overflow-hidden px-1.5 py-1.5 space-y-1.5">
+                  {day.games.slice(0, 2).map((g, gi) => (
                     <div
                       key={gi}
-                      className="rounded bg-[#1e1e1e] border border-[#2b2b2b] px-1.5 py-1"
+                      className="rounded bg-[#0f0f0f] border border-[#1f1f1f] px-2 py-1.5"
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         {g.logo_url ? (
-                          <img src={g.logo_url} alt="" className="w-5 h-5 object-contain shrink-0" />
+                          <img src={g.logo_url} alt="" className="w-9 h-9 object-contain shrink-0" />
                         ) : (
-                          <div className="w-5 h-5 bg-white/5 rounded shrink-0" />
+                          <div className="w-9 h-9 bg-white/5 rounded shrink-0" />
                         )}
-                        <div className="text-[10px] font-black leading-tight text-white truncate">
-                          vs {g.opponent || "TBD"}
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-black leading-tight text-white truncate">
+                            vs {g.opponent || "TBD"}
+                          </div>
+                          <div className="text-[11px] leading-tight text-gray-400 truncate">
+                            {g.sport}
+                          </div>
                         </div>
                       </div>
-                      <div className="mt-0.5 text-[9px] leading-tight text-gray-400 truncate">
-                        {g.sport}
-                      </div>
                       {(fmtTime(g.kickoff) || fmtTime(g.crew_call ?? null)) && (
-                        <div className="mt-0.5 flex items-center justify-between text-[9px] leading-tight">
+                        <div className="mt-1 flex items-center justify-between text-[11px] leading-tight">
                           {fmtTime(g.kickoff) && (
                             <span className="text-[#ffd21a] font-bold">
                               {fmtTime(g.kickoff)}
