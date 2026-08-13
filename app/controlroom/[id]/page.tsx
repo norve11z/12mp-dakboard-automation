@@ -568,70 +568,132 @@ function SectionHeader({ title }: { title: string }) {
    =============================================================== */
 
 function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) {
-  const bySport = upcoming.reduce<Record<string, UpcomingGame[]>>((acc, g) => {
-    (acc[g.sport] ||= []).push(g);
-    return acc;
-  }, {});
-  const sports = Object.keys(bySport).sort();
+  // Build 30-day grid starting today (Chicago local)
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+  const [ty, tm, td] = todayStr.split("-").map(Number);
+  const today = new Date(ty, tm - 1, td);
 
-  const fmtDate = (d: string) => {
-    const [y, m, day] = d.split("-").map(Number);
-    return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
+  const days: { date: Date; iso: string; games: UpcomingGame[] }[] = [];
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    days.push({ date: d, iso, games: upcoming.filter(g => g.game_date === iso) });
+  }
+
   const fmtTime = (iso: string | null) => iso
     ? new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })
     : null;
 
+  const monthName = (d: Date) => d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+
   return (
-    <div className="w-full h-full flex flex-col bg-[#500000] text-white">
-      {/* Video header */}
-      <div className="w-full" style={{ height: "40%" }}>
+    <div className="w-full h-full flex flex-col bg-[#0a0a0a] text-white">
+      {/* Hidden video (kept mounted, not displayed) */}
+      <div className="hidden">
         <VideoLoop videos={VIDEOS} />
       </div>
 
-      {/* Brand strip */}
-      <div className="w-full py-4 flex items-center justify-center gap-4 border-y-4 border-white bg-[#3a0000]">
-        <span className="text-4xl font-black tracking-wider">TEXAS A&M</span>
-        <span className="text-2xl font-light text-gray-300">•</span>
-        <span className="text-3xl font-bold text-gray-200">12TH MAN PRODUCTIONS</span>
+      {/* Top 1/3 — logo */}
+      <div className="flex items-center justify-center" style={{ height: "33.333%" }}>
+        <img
+          src="/12mp-logo.png"
+          alt="12th Man Productions"
+          className="max-w-[80%] max-h-[80%] object-contain"
+        />
       </div>
 
-      {/* Upcoming */}
-      <div className="flex-1 overflow-hidden px-8 py-6">
-        <div className="text-3xl font-black mb-4 tracking-wide">UPCOMING</div>
-        {sports.length === 0 ? (
-          <div className="text-2xl text-gray-300">No upcoming games scheduled.</div>
-        ) : (
-          <div className="grid grid-cols-2 gap-x-8 gap-y-5 overflow-hidden">
-            {sports.map(sport => (
-              <div key={sport}>
-                <div className="text-xl font-bold text-yellow-200 uppercase mb-2 border-b border-yellow-300/40 pb-1">
-                  {sport}
+      {/* Bottom 2/3 — calendar */}
+      <div className="flex-1 min-h-0 px-6 pb-6 pt-2 flex flex-col">
+        <div className="flex items-baseline justify-between mb-3 px-1">
+          <div className="text-2xl font-black tracking-[0.25em] uppercase text-white">
+            Upcoming 30 Days
+          </div>
+          <div className="text-sm font-bold tracking-widest uppercase text-gray-400">
+            {monthName(days[0].date)}
+            {days[29] && monthName(days[29].date) !== monthName(days[0].date) &&
+              ` — ${monthName(days[29].date)}`}
+          </div>
+        </div>
+
+        <div
+          className="flex-1 grid gap-1.5"
+          style={{
+            gridTemplateColumns: "repeat(5, 1fr)",
+            gridTemplateRows: "repeat(6, 1fr)",
+          }}
+        >
+          {days.map((day, i) => {
+            const isFirstOfMonth = day.date.getDate() === 1;
+            const isToday = i === 0;
+            return (
+              <div
+                key={day.iso}
+                className={`
+                  relative rounded-md border overflow-hidden flex flex-col
+                  ${isToday ? "border-[#8a0000] bg-[#1a0000]" : "border-[#232323] bg-[#131313]"}
+                `}
+              >
+                {/* Date header */}
+                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#232323]">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className={`text-lg font-black leading-none ${isToday ? "text-white" : "text-gray-200"}`}>
+                      {day.date.getDate()}
+                    </span>
+                    {isFirstOfMonth && (
+                      <span className="text-[9px] font-bold tracking-widest uppercase text-[#ffd21a]">
+                        {monthName(day.date)}
+                      </span>
+                    )}
+                  </div>
+                  {isToday && (
+                    <span className="text-[8px] font-black tracking-widest uppercase text-[#ff6b6b]">
+                      Today
+                    </span>
+                  )}
                 </div>
-                <ul className="space-y-2">
-                  {bySport[sport].slice(0, 4).map((g, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      {g.logo_url ? (
-                        <img src={g.logo_url} alt="" className="w-10 h-10 object-contain bg-white/10 rounded" />
-                      ) : (
-                        <div className="w-10 h-10 bg-white/10 rounded" />
-                      )}
-                      <div className="flex-1">
-                        <div className="text-lg font-bold leading-tight">
+
+                {/* Games */}
+                <div className="flex-1 min-h-0 overflow-hidden px-1.5 py-1 space-y-1">
+                  {day.games.map((g, gi) => (
+                    <div
+                      key={gi}
+                      className="rounded bg-[#1e1e1e] border border-[#2b2b2b] px-1.5 py-1"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        {g.logo_url ? (
+                          <img src={g.logo_url} alt="" className="w-5 h-5 object-contain shrink-0" />
+                        ) : (
+                          <div className="w-5 h-5 bg-white/5 rounded shrink-0" />
+                        )}
+                        <div className="text-[10px] font-black leading-tight text-white truncate">
                           vs {g.opponent || "TBD"}
                         </div>
-                        <div className="text-sm text-gray-300">
-                          {fmtDate(g.game_date)}
-                          {fmtTime(g.kickoff) && ` • ${fmtTime(g.kickoff)}`}
-                        </div>
                       </div>
-                    </li>
+                      <div className="mt-0.5 text-[9px] leading-tight text-gray-400 truncate">
+                        {g.sport}
+                      </div>
+                      {(fmtTime(g.kickoff) || fmtTime(g.crew_call ?? null)) && (
+                        <div className="mt-0.5 flex items-center justify-between text-[9px] leading-tight">
+                          {fmtTime(g.kickoff) && (
+                            <span className="text-[#ffd21a] font-bold">
+                              {fmtTime(g.kickoff)}
+                            </span>
+                          )}
+                          {fmtTime(g.crew_call ?? null) && (
+                            <span className="text-gray-500">
+                              CC {fmtTime(g.crew_call ?? null)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
