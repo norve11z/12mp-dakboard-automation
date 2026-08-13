@@ -574,7 +574,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
   const today = new Date(ty, tm - 1, td);
 
   const days: { date: Date; iso: string; games: UpcomingGame[] }[] = [];
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 24; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -612,15 +612,15 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
           </div>
           <div className="text-sm font-bold tracking-widest uppercase text-gray-400">
             {monthName(days[0].date)}
-            {days[29] && monthName(days[29].date) !== monthName(days[0].date) &&
-              ` — ${monthName(days[29].date)}`}
+            {days[23] && monthName(days[23].date) !== monthName(days[0].date) &&
+              ` — ${monthName(days[23].date)}`}
           </div>
         </div>
 
         <div
-          className="flex-1 grid gap-1.5"
+          className="flex-1 grid gap-2"
           style={{
-            gridTemplateColumns: "repeat(5, 1fr)",
+            gridTemplateColumns: "repeat(4, 1fr)",
             gridTemplateRows: "repeat(6, 1fr)",
           }}
         >
@@ -638,52 +638,52 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                 `}
               >
                 {/* Date header */}
-                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#2e2e2e]">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className={`text-2xl font-black leading-none ${isToday ? "text-white" : "text-white"}`}>
+                <div className="flex items-center justify-between px-3 pt-2 pb-1.5 border-b border-[#2e2e2e]">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black leading-none text-white">
                       {day.date.getDate()}
                     </span>
                     {isFirstOfMonth && (
-                      <span className="text-[11px] font-bold tracking-widest uppercase text-[#ffd21a]">
+                      <span className="text-[13px] font-bold tracking-widest uppercase text-[#ffd21a]">
                         {monthName(day.date)}
                       </span>
                     )}
                   </div>
                   {isToday && (
-                    <span className="text-[10px] font-black tracking-widest uppercase text-[#ff8080]">
+                    <span className="text-[12px] font-black tracking-widest uppercase text-[#ff8080]">
                       Today
                     </span>
                   )}
                 </div>
 
                 {/* Games (max 2) */}
-                <div className="flex-1 min-h-0 overflow-hidden px-1.5 py-1.5 space-y-1.5">
+                <div className="flex-1 min-h-0 overflow-hidden px-2 py-2 space-y-2">
                   {day.games.slice(0, 2).map((g, gi) => (
                     <div
                       key={gi}
-                      className="rounded bg-[#252525] border border-[#3f3f3f] px-2 py-1.5"
+                      className="rounded bg-[#252525] border border-[#3f3f3f] px-2.5 py-2"
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         {g.logo_url ? (
                           <img
                             src={g.logo_url}
                             alt=""
-                            className="w-12 h-12 object-contain shrink-0 bg-white rounded border-2 border-white p-0.5"
+                            className="w-16 h-16 object-contain shrink-0 bg-white rounded border-2 border-white p-1"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-white/10 rounded border-2 border-white shrink-0" />
+                          <div className="w-16 h-16 bg-white/10 rounded border-2 border-white shrink-0" />
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="text-base font-black leading-tight text-white truncate">
+                          <div className="text-lg font-black leading-tight text-white truncate">
                             vs {g.opponent || "TBD"}
                           </div>
-                          <div className="text-[12px] leading-tight text-gray-300 truncate">
+                          <div className="text-[13px] leading-tight text-gray-300 truncate">
                             {g.sport}
                           </div>
                         </div>
                       </div>
                       {(fmtTime(g.kickoff) || fmtTime(g.crew_call ?? null)) && (
-                        <div className="mt-1 flex items-center justify-between text-[12px] leading-tight">
+                        <div className="mt-1.5 flex items-center justify-between text-[13px] leading-tight">
                           {fmtTime(g.kickoff) && (
                             <span className="text-[#ffd21a] font-bold">
                               {fmtTime(g.kickoff)}
