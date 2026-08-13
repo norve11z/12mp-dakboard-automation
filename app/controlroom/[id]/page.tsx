@@ -588,19 +588,20 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
   const monthName = (d: Date) => d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0a0a0a] text-white">
-      {/* Hidden video (kept mounted, not displayed) */}
+    <div className="w-full h-full flex flex-col bg-[#0d0d0d] text-white">   
+       {/* Hidden video (kept mounted, not displayed) */}
       <div className="hidden">
         <VideoLoop videos={VIDEOS} />
       </div>
 
       {/* Top 1/3 — logo */}
-      <div className="w-full" style={{ height: "33.333%" }}>
+      <div className="w-full relative" style={{ height: "33.333%" }}>
         <img
           src="/12mp-logo.png"
           alt="12th Man Productions"
           className="w-full h-full object-cover object-top"
         />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#0d0d0d] pointer-events-none" />
       </div>
 
       {/* Bottom 2/3 — calendar */}
@@ -631,13 +632,15 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                 key={day.iso}
                 className={`
                   relative rounded-md border overflow-hidden flex flex-col
-                  ${isToday ? "border-[#8a0000] bg-[#0a0000]" : "border-[#1a1a1a] bg-[#050505]"}
+                  ${isToday
+                    ? "border-[#a00000] bg-[#1c0505]"
+                    : "border-[#3a3a3a] bg-[#1a1a1a]"}
                 `}
               >
                 {/* Date header */}
-                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#1a1a1a]">
+                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#2e2e2e]">
                   <div className="flex items-baseline gap-1.5">
-                    <span className={`text-2xl font-black leading-none ${isToday ? "text-white" : "text-gray-200"}`}>
+                    <span className={`text-2xl font-black leading-none ${isToday ? "text-white" : "text-white"}`}>
                       {day.date.getDate()}
                     </span>
                     {isFirstOfMonth && (
@@ -647,7 +650,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                     )}
                   </div>
                   {isToday && (
-                    <span className="text-[10px] font-black tracking-widest uppercase text-[#ff6b6b]">
+                    <span className="text-[10px] font-black tracking-widest uppercase text-[#ff8080]">
                       Today
                     </span>
                   )}
@@ -658,32 +661,36 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                   {day.games.slice(0, 2).map((g, gi) => (
                     <div
                       key={gi}
-                      className="rounded bg-[#0f0f0f] border border-[#1f1f1f] px-2 py-1.5"
+                      className="rounded bg-[#252525] border border-[#3f3f3f] px-2 py-1.5"
                     >
                       <div className="flex items-center gap-2">
                         {g.logo_url ? (
-                          <img src={g.logo_url} alt="" className="w-9 h-9 object-contain shrink-0" />
+                          <img
+                            src={g.logo_url}
+                            alt=""
+                            className="w-12 h-12 object-contain shrink-0 bg-white rounded border-2 border-white p-0.5"
+                          />
                         ) : (
-                          <div className="w-9 h-9 bg-white/5 rounded shrink-0" />
+                          <div className="w-12 h-12 bg-white/10 rounded border-2 border-white shrink-0" />
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-black leading-tight text-white truncate">
+                          <div className="text-base font-black leading-tight text-white truncate">
                             vs {g.opponent || "TBD"}
                           </div>
-                          <div className="text-[11px] leading-tight text-gray-400 truncate">
+                          <div className="text-[12px] leading-tight text-gray-300 truncate">
                             {g.sport}
                           </div>
                         </div>
                       </div>
                       {(fmtTime(g.kickoff) || fmtTime(g.crew_call ?? null)) && (
-                        <div className="mt-1 flex items-center justify-between text-[11px] leading-tight">
+                        <div className="mt-1 flex items-center justify-between text-[12px] leading-tight">
                           {fmtTime(g.kickoff) && (
                             <span className="text-[#ffd21a] font-bold">
                               {fmtTime(g.kickoff)}
                             </span>
                           )}
                           {fmtTime(g.crew_call ?? null) && (
-                            <span className="text-gray-500">
+                            <span className="text-gray-400">
                               CC {fmtTime(g.crew_call ?? null)}
                             </span>
                           )}
