@@ -595,11 +595,11 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
       </div>
 
       {/* Top 1/3 — logo */}
-      <div className="flex items-center justify-center" style={{ height: "33.333%" }}>
+      <div className="w-full" style={{ height: "33.333%" }}>
         <img
           src="/12mp-logo.png"
           alt="12th Man Productions"
-          className="max-w-[80%] max-h-[80%] object-contain"
+          className="w-full h-full object-cover object-top"
         />
       </div>
 
