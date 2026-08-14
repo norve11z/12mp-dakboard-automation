@@ -52,10 +52,12 @@ const crewFontSize =
 
 const crewCellPadding =
   crewRows <= 6
-    ? "8px"
+    ? "10px"
     : crewRows <= 8
-      ? "6px"
-      : "2px";
+      ? "8px"
+      : crewRows <= 17
+        ? "8px"
+        : "3px";
 
   return (
     <div className="control-room w-screen h-screen bg-black text-white flex flex-col overflow-hidden font-sans">
@@ -456,7 +458,7 @@ const crewCellPadding =
                 CREW
             ======================================================= */}
             <section className="crew-section flex-1 min-h-0 overflow-hidden">
-              <SectionHeader title="Production Staff" />
+              <SectionHeader title={state.displayType === "bigscreen" ? "Big Screen Staff" : "Broadcast Staff"} />
 
               <div className="mt-1 h-full overflow-hidden rounded-lg border border-[#2b2b2b]">
                 <table
@@ -589,7 +591,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
   const weekday = (d: Date) => d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0d0d0d] text-white">
+    <div className="w-full h-full flex flex-col bg-black text-white">
       {/* Hidden video (kept mounted, not displayed) */}
       <div className="hidden">
         <VideoLoop videos={VIDEOS} />
@@ -602,7 +604,6 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
           alt="12th Man Productions"
           className="w-full h-full object-cover object-top"
         />
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#0d0d0d] pointer-events-none" />
       </div>
 
       {/* Bottom 2/3 — calendar */}
@@ -618,11 +619,14 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
           </div>
         </div>
 
+        {/* Hashtag-grid calendar: no per-cell borders, use gaps as grid lines */}
         <div
-          className="flex-1 grid gap-1.5"
+          className="flex-1 grid bg-[#2a2a2a]"
           style={{
             gridTemplateColumns: "repeat(5, 1fr)",
             gridTemplateRows: "repeat(6, 1fr)",
+            gap: "2px",
+            padding: "2px",
           }}
         >
           {days.map((day, i) => {
@@ -632,14 +636,12 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
               <div
                 key={day.iso}
                 className={`
-                  relative rounded-md border overflow-hidden flex flex-col
-                  ${isToday
-                    ? "border-[#a00000] bg-[#1c0505]"
-                    : "border-[#3a3a3a] bg-[#1a1a1a]"}
+                  relative overflow-hidden flex flex-col
+                  ${isToday ? "bg-[#1c0505]" : "bg-black"}
                 `}
               >
                 {/* Date header */}
-                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#2e2e2e]">
+                <div className="flex items-center justify-between px-2 pt-1.5 pb-1">
                   <div className="flex items-baseline gap-1.5 min-w-0">
                     <span className="text-2xl font-black leading-none text-white">
                       {day.date.getDate()}
@@ -660,28 +662,43 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                   )}
                 </div>
 
-                {/* Games (max 2) */}
-                <div className="flex-1 min-h-0 overflow-hidden px-1.5 py-1.5 space-y-1.5">
+                {/* Games (max 2) — use inner hashtag grid for card dividers */}
+                <div
+                  className="flex-1 min-h-0 overflow-hidden grid bg-[#2a2a2a] m-1"
+                  style={{
+                    gridTemplateColumns: "1fr",
+                    gridAutoRows: "1fr",
+                    gap: "2px",
+                    padding: "2px",
+                  }}
+                >
                   {day.games.slice(0, 2).map((g, gi) => (
                     <div
                       key={gi}
-                      className="rounded bg-[#252525] border border-[#3f3f3f] p-1.5 flex items-center gap-1.5"
+                      className="bg-[#111] p-1.5 grid overflow-hidden"
+                      style={{
+                        gridTemplateColumns: "1fr 2px 1fr",
+                        gap: "0",
+                      }}
                     >
                       {/* Left half — logo */}
-                      <div className="w-1/2 flex items-center justify-center">
+                      <div className="flex items-center justify-center">
                         {g.logo_url ? (
                           <img
                             src={g.logo_url}
                             alt=""
-                            className="max-w-full max-h-14 object-contain bg-white rounded border-2 border-white p-0.5"
+                            className="max-w-full max-h-14 object-contain bg-white p-0.5"
                           />
                         ) : (
-                          <div className="w-14 h-14 bg-white/10 rounded border-2 border-white" />
+                          <div className="w-14 h-14 bg-white/10" />
                         )}
                       </div>
 
+                      {/* Divider */}
+                      <div className="bg-[#2a2a2a]" />
+
                       {/* Right half — info */}
-                      <div className="w-1/2 min-w-0 flex flex-col justify-center leading-tight">
+                      <div className="min-w-0 flex flex-col justify-center leading-tight pl-1.5">
                         <div className="text-base font-black text-white truncate">
                           {g.opponent_abbr || "TBD"}
                         </div>
