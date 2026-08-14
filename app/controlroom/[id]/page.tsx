@@ -574,7 +574,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
   const today = new Date(ty, tm - 1, td);
 
   const days: { date: Date; iso: string; games: UpcomingGame[] }[] = [];
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 30; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -586,10 +586,11 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
     : null;
 
   const monthName = (d: Date) => d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+  const weekday = (d: Date) => d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0d0d0d] text-white">   
-       {/* Hidden video (kept mounted, not displayed) */}
+    <div className="w-full h-full flex flex-col bg-[#0d0d0d] text-white">
+      {/* Hidden video (kept mounted, not displayed) */}
       <div className="hidden">
         <VideoLoop videos={VIDEOS} />
       </div>
@@ -612,15 +613,15 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
           </div>
           <div className="text-sm font-bold tracking-widest uppercase text-gray-400">
             {monthName(days[0].date)}
-            {days[23] && monthName(days[23].date) !== monthName(days[0].date) &&
-              ` — ${monthName(days[23].date)}`}
+            {days[29] && monthName(days[29].date) !== monthName(days[0].date) &&
+              ` — ${monthName(days[29].date)}`}
           </div>
         </div>
 
         <div
-          className="flex-1 grid gap-2"
+          className="flex-1 grid gap-1.5"
           style={{
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: "repeat(5, 1fr)",
             gridTemplateRows: "repeat(6, 1fr)",
           }}
         >
@@ -638,64 +639,66 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                 `}
               >
                 {/* Date header */}
-                <div className="flex items-center justify-between px-3 pt-2 pb-1.5 border-b border-[#2e2e2e]">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-black leading-none text-white">
+                <div className="flex items-center justify-between px-2 pt-1.5 pb-1 border-b border-[#2e2e2e]">
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="text-2xl font-black leading-none text-white">
                       {day.date.getDate()}
                     </span>
+                    <span className="text-[11px] font-bold tracking-wider uppercase text-gray-400">
+                      {weekday(day.date)}
+                    </span>
                     {isFirstOfMonth && (
-                      <span className="text-[13px] font-bold tracking-widest uppercase text-[#ffd21a]">
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-[#ffd21a] truncate">
                         {monthName(day.date)}
                       </span>
                     )}
                   </div>
                   {isToday && (
-                    <span className="text-[12px] font-black tracking-widest uppercase text-[#ff8080]">
-                      Today
+                    <span className="text-[10px] font-black tracking-widest uppercase text-[#ff8080]">
+                      Now
                     </span>
                   )}
                 </div>
 
                 {/* Games (max 2) */}
-                <div className="flex-1 min-h-0 overflow-hidden px-2 py-2 space-y-2">
+                <div className="flex-1 min-h-0 overflow-hidden px-1.5 py-1.5 space-y-1.5">
                   {day.games.slice(0, 2).map((g, gi) => (
                     <div
                       key={gi}
-                      className="rounded bg-[#252525] border border-[#3f3f3f] px-2.5 py-2"
+                      className="rounded bg-[#252525] border border-[#3f3f3f] p-1.5 flex items-center gap-1.5"
                     >
-                      <div className="flex items-center gap-2.5">
+                      {/* Left half — logo */}
+                      <div className="w-1/2 flex items-center justify-center">
                         {g.logo_url ? (
                           <img
                             src={g.logo_url}
                             alt=""
-                            className="w-16 h-16 object-contain shrink-0 bg-white rounded border-2 border-white p-1"
+                            className="max-w-full max-h-14 object-contain bg-white rounded border-2 border-white p-0.5"
                           />
                         ) : (
-                          <div className="w-16 h-16 bg-white/10 rounded border-2 border-white shrink-0" />
+                          <div className="w-14 h-14 bg-white/10 rounded border-2 border-white" />
                         )}
-                        <div className="min-w-0 flex-1">
-                          <div className="text-lg font-black leading-tight text-white truncate">
-                            vs {g.opponent || "TBD"}
-                          </div>
-                          <div className="text-[13px] leading-tight text-gray-300 truncate">
-                            {g.sport}
-                          </div>
-                        </div>
                       </div>
-                      {(fmtTime(g.kickoff) || fmtTime(g.crew_call ?? null)) && (
-                        <div className="mt-1.5 flex items-center justify-between text-[13px] leading-tight">
-                          {fmtTime(g.kickoff) && (
-                            <span className="text-[#ffd21a] font-bold">
-                              {fmtTime(g.kickoff)}
-                            </span>
-                          )}
-                          {fmtTime(g.crew_call ?? null) && (
-                            <span className="text-gray-400">
-                              CC {fmtTime(g.crew_call ?? null)}
-                            </span>
-                          )}
+
+                      {/* Right half — info */}
+                      <div className="w-1/2 min-w-0 flex flex-col justify-center leading-tight">
+                        <div className="text-base font-black text-white truncate">
+                          {g.opponent_abbr || "TBD"}
                         </div>
-                      )}
+                        <div className="text-[10px] text-gray-300 truncate uppercase tracking-wide">
+                          {g.sport}
+                        </div>
+                        {fmtTime(g.crew_call ?? null) && (
+                          <div className="text-[10px] text-gray-400 truncate">
+                            CC {fmtTime(g.crew_call ?? null)}
+                          </div>
+                        )}
+                        {fmtTime(g.kickoff) && (
+                          <div className="text-[11px] text-[#ffd21a] font-bold truncate">
+                            {fmtTime(g.kickoff)}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

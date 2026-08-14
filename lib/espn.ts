@@ -13,7 +13,7 @@ const TEAMS: Record<string, { league: string; teamId: number }> = {
 
 interface EspnCompetitor {
   id: string; homeAway: string;
-  team: { id: string; displayName: string; shortDisplayName: string; logos?: { href: string }[]; logo?: string };
+  team: { id: string; displayName: string; shortDisplayName: string; abbreviation?: string; logos?: { href: string }[]; logo?: string };
 }
 interface EspnEvent {
   id: string; date: string;
@@ -51,6 +51,7 @@ function parseGame(ev: EspnEvent, teamId: number) {
   if (!us || !them) return null;
   return {
     opponent: them.team.displayName,
+    opponent_abbr: them.team.abbreviation || null,
     logo_url: them.team.logos?.[0]?.href || them.team.logo || null,
     kickoff: ev.date,
     home_away: us.homeAway,
@@ -100,14 +101,15 @@ export async function refreshSchedules() {
       if ((existing?.source as string) === "manual") { skipped++; continue; }
 
       await db().execute({
-        sql: `INSERT INTO game_info (sport, game_date, opponent, kickoff, notes, logo_url, source)
-              VALUES (?, ?, ?, ?, NULL, ?, 'espn')
+        sql: `INSERT INTO game_info (sport, game_date, opponent, opponent_abbr, kickoff, notes, logo_url, source)
+              VALUES (?, ?, ?, ?, ?, NULL, ?, 'espn')
               ON CONFLICT(sport, game_date) DO UPDATE SET
-                opponent = CASE WHEN game_info.source = 'manual' THEN game_info.opponent ELSE excluded.opponent END,
-                kickoff  = CASE WHEN game_info.source = 'manual' THEN game_info.kickoff  ELSE excluded.kickoff  END,
-                logo_url = CASE WHEN game_info.source = 'manual' THEN game_info.logo_url ELSE excluded.logo_url END,
-                source   = CASE WHEN game_info.source = 'manual' THEN 'manual' ELSE 'espn' END`,
-        args: [sport, gd, parsed.opponent, parsed.kickoff, parsed.logo_url],
+                opponent      = CASE WHEN game_info.source = 'manual' THEN game_info.opponent      ELSE excluded.opponent      END,
+                opponent_abbr = CASE WHEN game_info.source = 'manual' THEN game_info.opponent_abbr ELSE excluded.opponent_abbr END,
+                kickoff       = CASE WHEN game_info.source = 'manual' THEN game_info.kickoff       ELSE excluded.kickoff       END,
+                logo_url      = CASE WHEN game_info.source = 'manual' THEN game_info.logo_url      ELSE excluded.logo_url      END,
+                source        = CASE WHEN game_info.source = 'manual' THEN 'manual'                ELSE 'espn'                 END`,
+        args: [sport, gd, parsed.opponent, parsed.opponent_abbr, parsed.kickoff, parsed.logo_url],
       });
       updated++;
     }

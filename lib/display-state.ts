@@ -17,6 +17,7 @@ export interface UpcomingGame {
   sport: string;
   game_date: string;
   opponent: string | null;
+  opponent_abbr: string | null;
   logo_url: string | null;
   kickoff: string | null;
   home_away?: string | null;
@@ -65,30 +66,32 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   })).rows[0];
 
     if (!disp) {
-      const upcoming = (await db().execute(`
-        SELECT
-          gi.sport,
-          gi.game_date,
-          gi.opponent,
-          gi.logo_url,
-          gi.kickoff,
-          (
-            SELECT MIN(s.dtstart) FROM shifts s
-            WHERE s.sport = gi.sport
-              AND substr(s.dtstart, 1, 10) = gi.game_date
-          ) AS crew_call
-        FROM game_info gi
-        WHERE gi.game_date >= date('now')
-          AND gi.game_date <= date('now', '+30 days')
-        ORDER BY gi.game_date, gi.sport
-      `)).rows.map(r => ({
-        sport: r.sport as string,
-        game_date: r.game_date as string,
-        opponent: (r.opponent as string) ?? null,
-        logo_url: (r.logo_url as string) ?? null,
-        kickoff: (r.kickoff as string) ?? null,
-        crew_call: (r.crew_call as string) ?? null,
-      }));
+    const upcoming = (await db().execute(`
+      SELECT
+        gi.sport,
+        gi.game_date,
+        gi.opponent,
+        gi.opponent_abbr,
+        gi.logo_url,
+        gi.kickoff,
+        (
+          SELECT MIN(s.dtstart) FROM shifts s
+          WHERE s.sport = gi.sport
+            AND substr(s.dtstart, 1, 10) = gi.game_date
+        ) AS crew_call
+      FROM game_info gi
+      WHERE gi.game_date >= date('now')
+        AND gi.game_date <= date('now', '+30 days')
+      ORDER BY gi.game_date, gi.sport
+    `)).rows.map(r => ({
+      sport: r.sport as string,
+      game_date: r.game_date as string,
+      opponent: (r.opponent as string) ?? null,
+      opponent_abbr: (r.opponent_abbr as string) ?? null,
+      logo_url: (r.logo_url as string) ?? null,
+      kickoff: (r.kickoff as string) ?? null,
+      crew_call: (r.crew_call as string) ?? null,
+    }));
       return { panel, hasContent: false, upcoming };
     }
   const sport = disp.sport as string;

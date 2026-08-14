@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS game_info (
   notes       TEXT,
   logo_url    TEXT,
   source      TEXT NOT NULL DEFAULT 'manual',
+  opponent_abbr TEXT,
   UNIQUE(sport, game_date)
 );
 
