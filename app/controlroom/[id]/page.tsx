@@ -673,9 +673,11 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                           <img
                             src={g.logo_url}
                             alt=""
-                            className="max-w-full max-h-14 object-contain"
+                            className="max-w-full max-h-14 object-contain bg-white rounded border-2 border-white p-0.5"
                           />
-                        ) : null}
+                        ) : (
+                          <div className="w-14 h-14 bg-white/10 rounded border-2 border-white" />
+                        )}
                       </div>
 
                       {/* Right half — info */}
