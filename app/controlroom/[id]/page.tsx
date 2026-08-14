@@ -619,31 +619,32 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
           </div>
         </div>
 
-        {/* Hashtag-grid calendar: no per-cell borders, use gaps as grid lines */}
+        {/* Hashtag grid — only interior lines */}
         <div
-          className="flex-1 grid bg-[#2a2a2a]"
+          className="flex-1 grid"
           style={{
             gridTemplateColumns: "repeat(5, 1fr)",
             gridTemplateRows: "repeat(6, 1fr)",
-            gap: "2px",
-            padding: "2px",
           }}
         >
           {days.map((day, i) => {
             const isFirstOfMonth = day.date.getDate() === 1;
             const isToday = i === 0;
+            const col = i % 5;
+            const row = Math.floor(i / 5);
             return (
               <div
                 key={day.iso}
-                className={`
-                  relative overflow-hidden flex flex-col
-                  ${isToday ? "bg-[#1c0505]" : "bg-black"}
-                `}
+                className="relative overflow-hidden flex flex-col bg-black"
+                style={{
+                  borderRight: col < 4 ? "1px solid #3a3a3a" : "none",
+                  borderBottom: row < 5 ? "1px solid #3a3a3a" : "none",
+                }}
               >
                 {/* Date header */}
                 <div className="flex items-center justify-between px-2 pt-1.5 pb-1">
                   <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="text-2xl font-black leading-none text-white">
+                    <span className={`text-2xl font-black leading-none ${isToday ? "text-[#ffd21a]" : "text-white"}`}>
                       {day.date.getDate()}
                     </span>
                     <span className="text-[11px] font-bold tracking-wider uppercase text-gray-400">
@@ -662,43 +663,23 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
                   )}
                 </div>
 
-                {/* Games (max 2) — use inner hashtag grid for card dividers */}
-                <div
-                  className="flex-1 min-h-0 overflow-hidden grid bg-[#2a2a2a] m-1"
-                  style={{
-                    gridTemplateColumns: "1fr",
-                    gridAutoRows: "1fr",
-                    gap: "2px",
-                    padding: "2px",
-                  }}
-                >
+                {/* Games (max 2) */}
+                <div className="flex-1 min-h-0 overflow-hidden px-1.5 py-1 space-y-1">
                   {day.games.slice(0, 2).map((g, gi) => (
-                    <div
-                      key={gi}
-                      className="bg-[#111] p-1.5 grid overflow-hidden"
-                      style={{
-                        gridTemplateColumns: "1fr 2px 1fr",
-                        gap: "0",
-                      }}
-                    >
+                    <div key={gi} className="flex items-center gap-1.5">
                       {/* Left half — logo */}
-                      <div className="flex items-center justify-center">
+                      <div className="w-1/2 flex items-center justify-center">
                         {g.logo_url ? (
                           <img
                             src={g.logo_url}
                             alt=""
-                            className="max-w-full max-h-14 object-contain bg-white p-0.5"
+                            className="max-w-full max-h-14 object-contain"
                           />
-                        ) : (
-                          <div className="w-14 h-14 bg-white/10" />
-                        )}
+                        ) : null}
                       </div>
 
-                      {/* Divider */}
-                      <div className="bg-[#2a2a2a]" />
-
                       {/* Right half — info */}
-                      <div className="min-w-0 flex flex-col justify-center leading-tight pl-1.5">
+                      <div className="w-1/2 min-w-0 flex flex-col justify-center leading-tight">
                         <div className="text-base font-black text-white truncate">
                           {g.opponent_abbr || "TBD"}
                         </div>
