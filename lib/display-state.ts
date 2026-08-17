@@ -200,7 +200,8 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   });
   withTs.sort((a, b) => a._ts - b._ts);
   const schedule: ScheduleRow[] = withTs.map(({ label, time }) => ({ label, time }));
-
+  console.log("[DEBUG] crew rows:", crew.map(c => ({ label: c.short_label, count: c.names.length, names: c.names })));
+  
   return {
     panel,
     hasContent: true,
