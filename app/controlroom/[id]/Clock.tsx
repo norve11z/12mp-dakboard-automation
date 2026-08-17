@@ -68,8 +68,8 @@ export default function Clock() {
   const { time, day, date } = useClock();
 
   return (
-    <div className="absolute top-3 right-6 z-20">
-      <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-4">
+    <div className="absolute top-2 right-6 z-20">
+      <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-3">
 
         {/* TIME */}
         <div className="text-[40px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
@@ -77,7 +77,7 @@ export default function Clock() {
         </div>
 
         {/* DAY + DATE */}
-        <div className="mt-2 flex items-baseline gap-3 whitespace-nowrap">
+        <div className="mt-2 flex items-baseline gap-2.5 whitespace-nowrap">
           <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
             {day}
           </span>
