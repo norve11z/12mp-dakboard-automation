@@ -114,6 +114,10 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
     args: [sport, department, ...dateRange],
   })).rows;
 
+  console.log("[DEBUG] dateRange:", dateRange);
+  console.log("[DEBUG] Chris count:", shifts.filter(s => s.employee_name === "Chris Permetti").length);
+  console.log("[DEBUG] sport/dept:", sport, department);
+
   // Position map
   const posMap = (await db().execute({
     sql: `SELECT ics_position, short_label, display_order FROM position_map
@@ -201,7 +205,7 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   withTs.sort((a, b) => a._ts - b._ts);
   const schedule: ScheduleRow[] = withTs.map(({ label, time }) => ({ label, time }));
   console.log("[DEBUG] crew rows:", crew.map(c => ({ label: c.short_label, count: c.names.length, names: c.names })));
-  
+
   return {
     panel,
     hasContent: true,
