@@ -38,14 +38,6 @@ export default function Clock() {
     <div className="absolute top-5 right-6 z-20">
       <div className="relative min-w-[290px] overflow-hidden border border-white/15 border-l-[5px] border-l-[#ffd21a] bg-black/90 px-5 py-4 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
 
-        {/* GAMEDAY */}
-        <div className="mb-1 flex items-center gap-2">
-          <div className="h-2.5 w-2.5 bg-[#ffd21a]" />
-
-          <span className="text-[11px] font-black tracking-[0.4em] uppercase text-[#ffd21a]">
-            Gameday
-          </span>
-        </div>
 
         {/* TIME */}
         <div className="text-[46px] font-black leading-none tracking-tight text-white tabular-nums">
