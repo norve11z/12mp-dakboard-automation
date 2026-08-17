@@ -68,11 +68,11 @@ export default function Clock() {
   const { time, day, date } = useClock();
 
   return (
-    <div className="absolute top-5 right-6 z-20">
+    <div className="absolute top-3 right-6 z-20">
       <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-4">
 
         {/* TIME */}
-        <div className="text-[43px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
+        <div className="text-[40px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
           {time}
         </div>
 
