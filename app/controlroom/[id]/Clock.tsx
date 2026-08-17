@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { TZ } from "@/lib/tz";
 
-export default function Clock() {
+function useClock() {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -34,27 +34,60 @@ export default function Clock() {
     year: "numeric",
   });
 
+  return { time, day, date };
+}
+
+export function NonGameClock() {
+  const { time, day, date } = useClock();
+
+  return (
+    <div className="absolute top-5 right-6 z-20">
+      <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-4">
+
+        {/* TIME */}
+        <div className="text-[52px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
+          {time}
+        </div>
+
+        {/* DAY + DATE */}
+        <div className="mt-2 flex items-baseline gap-3 whitespace-nowrap">
+          <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
+            {day}
+          </span>
+
+          <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
+            {date}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Clock() {
+  const { time, day, date } = useClock();
+
   return (
     <div className="absolute top-5 right-6 z-20">
       <div className="relative min-w-[290px] overflow-hidden border border-white/15 border-l-[5px] border-l-white bg-black/90 px-5 py-4 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
 
-
         {/* TIME */}
         <div className="text-[52px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
-            {time}
+          {time}
         </div>
 
-        {/* DAY */}
-        <div className="mt-2 text-[16px] font-black tracking-[0.18em] uppercase text-white">
-          {day}
+        {/* DAY + DATE */}
+        <div className="mt-2 flex items-baseline gap-3 whitespace-nowrap">
+          <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
+            {day}
+          </span>
+
+          <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
+            {date}
+          </span>
         </div>
 
-        {/* DATE */}
-        <div className="mt-0.5 text-[11px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
-          {date}
-        </div>
-
-        {/* GOLD BROADCAST ACCENT */}
+        {/* BROADCAST ACCENT */}
         <div className="absolute bottom-0 left-0 h-[3px] w-full bg-gradient-to-r from-white via-white/50 to-transparent" />
       </div>
     </div>

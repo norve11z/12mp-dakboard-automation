@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import AutoRefresh from "./AutoRefresh";
 import VideoLoop from "./VideoLoop";
 import type { UpcomingGame } from "@/lib/display-state";
+import { NonGameClock } from "./Clock";
 import Clock from "./Clock";
 
 
@@ -322,13 +323,7 @@ const crewCellPadding =
                 </div>
 
                 <div className="text-right">
-                  <div className="panel-label font-bold tracking-[0.25em] text-[#85898e] uppercase">
-                    Broadcast Staff
-                  </div>
-
-                  <div className="panel-number font-bold text-[#d0d2d4]">
-                    PCR {panel}
-                  </div>
+                  <Clock />
                 </div>
               </div>
             </div>
@@ -607,8 +602,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
           alt="12th Man Productions"
           className="w-full h-full object-cover object-top"
         />
-
-        <Clock />
+        <NonGameClock />
       </div>
 
 
