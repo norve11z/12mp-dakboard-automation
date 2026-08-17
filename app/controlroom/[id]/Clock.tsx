@@ -36,12 +36,12 @@ export default function Clock() {
 
   return (
     <div className="absolute top-5 right-6 z-20">
-      <div className="relative min-w-[290px] overflow-hidden border border-white/15 border-l-[5px] border-l-[#ffd21a] bg-black/90 px-5 py-4 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
+      <div className="relative min-w-[290px] overflow-hidden border border-white/15 border-l-[5px] border-l-white bg-black/90 px-5 py-4 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
 
 
         {/* TIME */}
-        <div className="text-[46px] font-black leading-none tracking-tight text-white tabular-nums">
-          {time}
+        <div className="text-[52px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
+            {time}
         </div>
 
         {/* DAY */}
