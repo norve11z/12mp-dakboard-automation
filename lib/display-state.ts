@@ -214,49 +214,79 @@ export async function getPanelState(
    * SHIFTS / CREW
    * ------------------------------------------------------------
    */
-  const shiftsRawResult = await db().execute({
-    sql: `
-      SELECT
-        employee_name,
-        position,
-        dtstart
-      FROM shifts
-      WHERE sport = ?
-        AND department = ?
-        AND substr(dtstart, 1, 10) IN (?, ?, ?)
-      ORDER BY dtstart
-    `,
-    args: [sport, department, ...dateRange],
-  });
+const shiftsRawResult = await db().execute({
+  sql: `
+    SELECT
+      employee_name,
+      position,
+      dtstart
+    FROM shifts
+    WHERE sport = ?
+      AND department = ?
+      AND substr(dtstart, 1, 10) IN (?, ?, ?)
+    ORDER BY dtstart
+  `,
+  args: [sport, department, ...dateRange],
+});
 
-  const shiftsRaw = shiftsRawResult.rows;
+const shiftsRaw = shiftsRawResult.rows;
 
-  const GAME_SHIFT_WINDOW_MS = 6 * 60 * 60 * 1000;
+/*
+ * Only use shifts from the selected game's local date.
+ */
+const sameDayShifts = shiftsRaw.filter((s) => {
+  return isoToLocalDate(s.dtstart as string) === game_date;
+});
+
+/*
+ * If there is no selected kickoff, use all shifts from that day.
+ */
+let shifts = sameDayShifts;
+
+if (selectedKickoff && sameDayShifts.length > 0) {
+  const kickoffTime = new Date(selectedKickoff).getTime();
 
   /*
-   * First make sure the shift occurs on the correct local date.
+   * Find the shift whose start time is closest to the selected
+   * game's kickoff.
    *
-   * Then, if a kickoff exists, only include shifts within 6 hours
-   * of that game's kickoff.
+   * This prevents shifts from another game on the same day
+   * from being included just because they fall within a large
+   * time window.
    */
-  const shifts = shiftsRaw.filter((s) => {
-    const dtstart = s.dtstart as string;
+  let closestShiftTime: number | null = null;
+  let closestDiff = Number.MAX_SAFE_INTEGER;
 
-    if (isoToLocalDate(dtstart) !== game_date) {
-      return false;
-    }
-
-    if (!selectedKickoff) {
-      return true;
-    }
-
-    const shiftTime = new Date(dtstart).getTime();
-    const kickoffTime = new Date(selectedKickoff).getTime();
-
+  for (const s of sameDayShifts) {
+    const shiftTime = new Date(s.dtstart as string).getTime();
     const diff = Math.abs(shiftTime - kickoffTime);
 
-    return diff <= GAME_SHIFT_WINDOW_MS;
-  });
+    if (diff < closestDiff) {
+      closestDiff = diff;
+      closestShiftTime = shiftTime;
+    }
+  }
+
+  /*
+   * Once the closest shift time is found, include shifts that
+   * belong to that same crew-call group.
+   *
+   * A 30-minute grouping window handles multiple employees
+   * having slightly different call times.
+   */
+  const CREW_CALL_GROUP_WINDOW_MS = 30 * 60 * 1000;
+
+  if (closestShiftTime !== null) {
+    shifts = sameDayShifts.filter((s) => {
+      const shiftTime = new Date(s.dtstart as string).getTime();
+
+      return (
+        Math.abs(shiftTime - closestShiftTime) <=
+        CREW_CALL_GROUP_WINDOW_MS
+      );
+    });
+  }
+}
 
   /*
    * ------------------------------------------------------------
