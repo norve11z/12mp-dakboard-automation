@@ -36,6 +36,7 @@ export interface DisplayState {
   sport?: string;
   displayType?: string;
   gameDate?: string;
+  kickoff?: string | null;
   opponent?: string | null;
   logoUrl?: string | null;
   title?: string;
@@ -417,6 +418,7 @@ if (selectedKickoff && sameDayShifts.length > 0) {
     sport,
     displayType: display_type,
     gameDate: game_date,
+    kickoff: gameTime,
     opponent: (info?.opponent as string) ?? null,
     logoUrl: (info?.logo_url as string) ?? null,
     title: titleFor(sport, display_type),
