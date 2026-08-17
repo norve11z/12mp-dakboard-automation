@@ -153,11 +153,7 @@ export async function getPanelState(
    * ------------------------------------------------------------
    * GAME INFO
    * ------------------------------------------------------------
-   *
    * Get all games for this sport/date.
-   *
-   * This MUST happen before filtering shifts because the selected
-   * game's kickoff is used to determine which shifts belong to it.
    */
   const gamesResult = await db().execute({
     sql: `
@@ -178,12 +174,8 @@ export async function getPanelState(
 
   /*
    * For a doubleheader:
-   *
    * - Before the first game is within 30 minutes, show the first game.
    * - Once a game's kickoff is within 30 minutes of now, switch to it.
-   *
-   * This means that at 5:00 PM, a 7:00 PM game is still not selected
-   * if there was an earlier game.
    */
   const now = Date.now();
   const SWITCH_BUFFER_MS = 30 * 60 * 1000;
@@ -204,8 +196,6 @@ export async function getPanelState(
 
   /*
    * Selected game's kickoff.
-   *
-   * This was previously using `info` before `info` was declared.
    */
   const selectedKickoff = (info?.kickoff as string) || null;
 
@@ -246,14 +236,6 @@ let shifts = sameDayShifts;
 if (selectedKickoff && sameDayShifts.length > 0) {
   const kickoffTime = new Date(selectedKickoff).getTime();
 
-  /*
-   * Find the shift whose start time is closest to the selected
-   * game's kickoff.
-   *
-   * This prevents shifts from another game on the same day
-   * from being included just because they fall within a large
-   * time window.
-   */
   let closestShiftTime: number | null = null;
   let closestDiff = Number.MAX_SAFE_INTEGER;
 
@@ -279,7 +261,6 @@ if (selectedKickoff && sameDayShifts.length > 0) {
   if (closestShiftTime !== null) {
     shifts = sameDayShifts.filter((s) => {
       const shiftTime = new Date(s.dtstart as string).getTime();
-
       return (
         Math.abs(shiftTime - closestShiftTime) <=
         CREW_CALL_GROUP_WINDOW_MS
@@ -287,7 +268,6 @@ if (selectedKickoff && sameDayShifts.length > 0) {
     });
   }
 }
-
   /*
    * ------------------------------------------------------------
    * POSITION MAP
@@ -310,10 +290,7 @@ if (selectedKickoff && sameDayShifts.length > 0) {
 
   const mapByPos = new Map<
     string,
-    {
-      short_label: string;
-      display_order: number;
-    }
+    {short_label: string; display_order: number;}
   >();
 
   for (const p of posMap) {
@@ -327,19 +304,15 @@ if (selectedKickoff && sameDayShifts.length > 0) {
    * Group employees by their ICS position.
    */
   const byPosition = new Map<string, string[]>();
-
   for (const s of shifts) {
     const pos = s.position as string;
-
     if (!byPosition.has(pos)) {
       byPosition.set(pos, []);
     }
-
     byPosition.get(pos)!.push(
       formatName(s.employee_name as string)
     );
   }
-
   /*
    * Build crew rows using the configured position map.
    */
@@ -375,9 +348,6 @@ if (selectedKickoff && sameDayShifts.length > 0) {
    * ------------------------------------------------------------
    * CREW CALL
    * ------------------------------------------------------------
-   *
-   * Crew call is the earliest shift that survived the game
-   * filtering above.
    */
   const crewCall =
     shifts.length > 0
@@ -387,7 +357,6 @@ if (selectedKickoff && sameDayShifts.length > 0) {
           return !min || d < min ? d : min;
         }, "" as string) || null
       : null;
-
   const gameTime = (info?.kickoff as string) || null;
 
   /*
@@ -407,9 +376,7 @@ if (selectedKickoff && sameDayShifts.length > 0) {
     `,
     args: [sport, display_type],
   });
-
   const templateRows = templateRowsResult.rows;
-
   type WithTs = ScheduleRow & {
     _ts: number;
   };
@@ -417,19 +384,15 @@ if (selectedKickoff && sameDayShifts.length > 0) {
   const withTs: WithTs[] = templateRows.map((r) => {
     const ref = r.ref as string;
     const off = Number(r.offset_minutes);
-
     const anchor =
       ref === "crew_call"
         ? crewCall
         : gameTime;
-
     return {
       label: r.label as string,
-
       time: anchor
         ? formatTimeLocal(addMinutes(anchor, off))
         : null,
-
       _ts: anchor
         ? new Date(addMinutes(anchor, off)).getTime()
         : Number.MAX_SAFE_INTEGER,
@@ -437,14 +400,12 @@ if (selectedKickoff && sameDayShifts.length > 0) {
   });
 
   withTs.sort((a, b) => a._ts - b._ts);
-
   const schedule: ScheduleRow[] = withTs.map(
     ({ label, time }) => ({
       label,
       time,
     })
   );
-
   /*
    * ------------------------------------------------------------
    * FINAL DISPLAY STATE
@@ -453,23 +414,14 @@ if (selectedKickoff && sameDayShifts.length > 0) {
   return {
     panel,
     hasContent: true,
-
     sport,
-
     displayType: display_type,
-
     gameDate: game_date,
-
     opponent: (info?.opponent as string) ?? null,
-
     logoUrl: (info?.logo_url as string) ?? null,
-
     title: titleFor(sport, display_type),
-
     dateLabel: formatDateLabel(game_date),
-
     crew,
-
     schedule,
   };
 }

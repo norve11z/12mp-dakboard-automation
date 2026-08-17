@@ -91,3 +91,29 @@ export default function Clock() {
     </div>
   );
 }
+
+
+export function FootballClock() {
+  const { time, day, date } = useClock();
+
+  return (
+    <div className="absolute top-3 right-6 z-20">
+        <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-3">
+
+        {/* TIME */}
+        <div className="text-center text-[40px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
+            {time}
+        </div>
+
+        {/* DAY + DATE */}
+        <div className="mt-2 flex items-center justify-center gap-3 whitespace-nowrap">
+            <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
+            UNTIL KICKOFF
+            </span>
+        </div>
+
+        </div>
+    </div>
+  );
+}
+
