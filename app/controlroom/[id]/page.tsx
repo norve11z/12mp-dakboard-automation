@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import AutoRefresh from "./AutoRefresh";
 import VideoLoop from "./VideoLoop";
 import type { UpcomingGame } from "@/lib/display-state";
+import Clock from "./Clock";
+
 
 const VIDEOS = [
   "/videos/am-hype-1.mp4",
@@ -583,6 +585,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
     days.push({ date: d, iso, games: upcoming.filter(g => g.game_date === iso) });
   }
 
+
   const fmtTime = (iso: string | null) => iso
     ? new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })
     : null;
@@ -604,7 +607,10 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
           alt="12th Man Productions"
           className="w-full h-full object-cover object-top"
         />
+
+        <Clock />
       </div>
+
 
       {/* Bottom 2/3 — calendar */}
       <div className="flex-1 min-h-0 px-6 pb-6 pt-2 flex flex-col">
