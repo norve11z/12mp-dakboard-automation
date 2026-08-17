@@ -44,9 +44,8 @@ export async function POST(req: Request) {
     await db().execute({
       sql: `INSERT INTO game_info (sport, game_date, opponent, kickoff, source)
             VALUES (?, ?, ?, ?, 'manual')
-            ON CONFLICT(sport, game_date) DO UPDATE SET
+            ON CONFLICT(sport, game_date, kickoff) DO UPDATE SET
               opponent = excluded.opponent,
-              kickoff  = excluded.kickoff,
               source   = 'manual'`,
       args: [b.sport, b.game_date, b.opponent || null, kickoffIso],
     });

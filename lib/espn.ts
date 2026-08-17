@@ -84,34 +84,40 @@ export async function refreshSchedules() {
     for (const ev of scheduleEvents) byDate.set(isoToLocalDate(ev.date), ev);
 
     for (const gd of dates) {
-      let match = byDate.get(gd);
-      if (!match) {
-        const yyyymmdd = gd.replaceAll("-", "");
-        const fallback = await fetchScoreboardForDate(sport, yyyymmdd);
-        match = fallback.find(ev => isoToLocalDate(ev.date) === gd);
+      let matches: EspnEvent[] = [];
+      const scheduleMatch = byDate.get(gd);
+      if (scheduleMatch) matches = [scheduleMatch];
+
+      // Always check scoreboard too, in case of doubleheader
+      const yyyymmdd = gd.replaceAll("-", "");
+      const fallback = await fetchScoreboardForDate(sport, yyyymmdd);
+      const fallbackSameDay = fallback.filter(ev => isoToLocalDate(ev.date) === gd);
+      if (fallbackSameDay.length > matches.length) matches = fallbackSameDay;
+
+      if (matches.length === 0) { missing++; continue; }
+
+      for (const match of matches) {
+        const parsed = parseGame(match, teamId);
+        if (!parsed) { missing++; continue; }
+
+        const existing = (await db().execute({
+          sql: `SELECT source FROM game_info WHERE sport = ? AND game_date = ? AND kickoff = ?`,
+          args: [sport, gd, parsed.kickoff],
+        })).rows[0];
+        if ((existing?.source as string) === "manual") { skipped++; continue; }
+
+        await db().execute({
+          sql: `INSERT INTO game_info (sport, game_date, opponent, opponent_abbr, kickoff, notes, logo_url, source)
+                VALUES (?, ?, ?, ?, ?, NULL, ?, 'espn')
+                ON CONFLICT(sport, game_date, kickoff) DO UPDATE SET
+                  opponent      = CASE WHEN game_info.source = 'manual' THEN game_info.opponent      ELSE excluded.opponent      END,
+                  opponent_abbr = CASE WHEN game_info.source = 'manual' THEN game_info.opponent_abbr ELSE excluded.opponent_abbr END,
+                  logo_url      = CASE WHEN game_info.source = 'manual' THEN game_info.logo_url      ELSE excluded.logo_url      END,
+                  source        = CASE WHEN game_info.source = 'manual' THEN 'manual'                ELSE 'espn'                 END`,
+          args: [sport, gd, parsed.opponent, parsed.opponent_abbr, parsed.kickoff, parsed.logo_url],
+        });
+        updated++;
       }
-      if (!match) { missing++; continue; }
-      const parsed = parseGame(match, teamId);
-      if (!parsed) { missing++; continue; }
-
-      const existing = (await db().execute({
-        sql: `SELECT source FROM game_info WHERE sport = ? AND game_date = ?`,
-        args: [sport, gd],
-      })).rows[0];
-      if ((existing?.source as string) === "manual") { skipped++; continue; }
-
-      await db().execute({
-        sql: `INSERT INTO game_info (sport, game_date, opponent, opponent_abbr, kickoff, notes, logo_url, source)
-              VALUES (?, ?, ?, ?, ?, NULL, ?, 'espn')
-              ON CONFLICT(sport, game_date) DO UPDATE SET
-                opponent      = CASE WHEN game_info.source = 'manual' THEN game_info.opponent      ELSE excluded.opponent      END,
-                opponent_abbr = CASE WHEN game_info.source = 'manual' THEN game_info.opponent_abbr ELSE excluded.opponent_abbr END,
-                kickoff       = CASE WHEN game_info.source = 'manual' THEN game_info.kickoff       ELSE excluded.kickoff       END,
-                logo_url      = CASE WHEN game_info.source = 'manual' THEN game_info.logo_url      ELSE excluded.logo_url      END,
-                source        = CASE WHEN game_info.source = 'manual' THEN 'manual'                ELSE 'espn'                 END`,
-        args: [sport, gd, parsed.opponent, parsed.opponent_abbr, parsed.kickoff, parsed.logo_url],
-      });
-      updated++;
     }
   }
 
