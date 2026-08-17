@@ -69,24 +69,25 @@ export default function Clock() {
 
   return (
     <div className="absolute top-3 right-6 z-20">
-      <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-3">
+        <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-3">
 
         {/* TIME */}
-        <div className="text-[40px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
-          {time}
+        <div className="text-center text-[40px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
+            {time}
         </div>
 
-        <div className="mt-2 flex items-center gap-3 whitespace-nowrap leading-none">
-        <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
+        {/* DAY + DATE */}
+        <div className="mt-2 flex items-center justify-center gap-3 whitespace-nowrap">
+            <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
             {day}
-        </span>
+            </span>
 
-        <span className="text-[12px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
+            <span className="text-[12px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
             {date}
-        </span>
+            </span>
         </div>
 
-      </div>
+        </div>
     </div>
   );
 }
