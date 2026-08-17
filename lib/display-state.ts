@@ -106,17 +106,17 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   ];
 
   // Shifts (crew)
-  const shifts = (await db().execute({
-    sql: `SELECT employee_name, position FROM shifts
+  // Shifts (crew) — only shifts whose local start date is the game date
+  // Shifts (crew) — filter to shifts whose Chicago-local start date = game_date
+  const shiftsRaw = (await db().execute({
+    sql: `SELECT employee_name, position, dtstart FROM shifts
           WHERE sport = ? AND department = ?
             AND substr(dtstart, 1, 10) IN (?, ?, ?)
           ORDER BY dtstart`,
     args: [sport, department, ...dateRange],
   })).rows;
 
-  console.log("[DEBUG] dateRange:", dateRange);
-  console.log("[DEBUG] Chris count:", shifts.filter(s => s.employee_name === "Chris Permetti").length);
-  console.log("[DEBUG] sport/dept:", sport, department);
+  const shifts = shiftsRaw.filter(s => isoToLocalDate(s.dtstart as string) === game_date);
 
   // Position map
   const posMap = (await db().execute({
@@ -182,8 +182,12 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
     args: [sport, department, ...dateRange],
   })).rows[0];
 
-  const crewCall = (crewCallRow?.crew_call as string) || null;
-  const gameTime = (info?.kickoff as string) || null;
+  const crewCall = shifts.length > 0
+    ? shifts.reduce((min, s) => {
+        const d = s.dtstart as string;
+        return !min || d < min ? d : min;
+      }, "" as string) || null
+    : null;  const gameTime = (info?.kickoff as string) || null;
 
   const templateRows = (await db().execute({
     sql: `SELECT label, ref, offset_minutes FROM schedule_template
@@ -204,7 +208,6 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   });
   withTs.sort((a, b) => a._ts - b._ts);
   const schedule: ScheduleRow[] = withTs.map(({ label, time }) => ({ label, time }));
-  console.log("[DEBUG] crew rows:", crew.map(c => ({ label: c.short_label, count: c.names.length, names: c.names })));
 
   return {
     panel,
