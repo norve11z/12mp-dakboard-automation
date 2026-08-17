@@ -76,16 +76,16 @@ export default function Clock() {
           {time}
         </div>
 
-        {/* DAY + DATE */}
-        <div className="mt-2 flex items-baseline gap-3 whitespace-nowrap">
-          <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
+        <div className="mt-2 flex items-center gap-3 whitespace-nowrap leading-none">
+        <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
             {day}
-          </span>
+        </span>
 
-          <span className="text-[12px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
+        <span className="text-[12px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
             {date}
-          </span>
+        </span>
         </div>
+
       </div>
     </div>
   );
