@@ -55,7 +55,7 @@ export function NonGameClock() {
             {day}
           </span>
 
-          <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
+          <span className="text-[12px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
             {date}
           </span>
         </div>
@@ -69,10 +69,10 @@ export default function Clock() {
 
   return (
     <div className="absolute top-5 right-6 z-20">
-      <div className="relative min-w-[290px] overflow-hidden border border-white/15 border-l-[5px] border-l-white bg-black/90 px-5 py-4 shadow-[0_6px_24px_rgba(0,0,0,0.7)]">
+      <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-4">
 
         {/* TIME */}
-        <div className="text-[52px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
+        <div className="text-[43px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
           {time}
         </div>
 
@@ -82,13 +82,10 @@ export default function Clock() {
             {day}
           </span>
 
-          <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
+          <span className="text-[12px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
             {date}
           </span>
         </div>
-
-        {/* BROADCAST ACCENT */}
-        <div className="absolute bottom-0 left-0 h-[3px] w-full bg-gradient-to-r from-white via-white/50 to-transparent" />
       </div>
     </div>
   );
