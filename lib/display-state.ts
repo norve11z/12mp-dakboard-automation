@@ -1,6 +1,12 @@
 import { db } from "./db";
 import { getDisplayDate } from "./settings";
-import { isoToLocalDate, formatTimeLocal, formatDateLabel, addMinutes, addDaysLocal } from "./tz";
+import {
+  isoToLocalDate,
+  formatTimeLocal,
+  formatDateLabel,
+  addMinutes,
+  addDaysLocal,
+} from "./tz";
 
 export interface CrewRow {
   short_label: string;
@@ -41,32 +47,55 @@ export interface DisplayState {
 
 function formatName(full: string): string {
   const parts = full.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].toUpperCase();
+
+  if (parts.length === 1) {
+    return parts[0].toUpperCase();
+  }
+
   const first = parts[0];
   const lastInitial = parts[parts.length - 1];
+
   return `${first} ${lastInitial}`.toUpperCase();
 }
-
-
 
 function titleFor(sport: string, displayType: string): string {
   const t = displayType === "bigscreen" ? "VIDEOBOARD" : "BROADCAST";
   return `${sport.toUpperCase()} ${t}`;
 }
 
-
-export async function getPanelState(panel: number, date?: string): Promise<DisplayState> {
+export async function getPanelState(
+  panel: number,
+  date?: string
+): Promise<DisplayState> {
   const gd = date || (await getDisplayDate());
 
-  const disp = (await db().execute({
-    sql: `SELECT d.id, d.sport, d.display_type, d.game_date
-          FROM assignments a JOIN displays d ON d.id = a.display_id
-          WHERE a.control_room_id = ? AND a.game_date = ? LIMIT 1`,
+  /*
+   * Find the display assigned to this control room panel.
+   */
+  const dispResult = await db().execute({
+    sql: `
+      SELECT
+        d.id,
+        d.sport,
+        d.display_type,
+        d.game_date
+      FROM assignments a
+      JOIN displays d ON d.id = a.display_id
+      WHERE a.control_room_id = ?
+        AND a.game_date = ?
+      LIMIT 1
+    `,
     args: [panel, gd],
-  })).rows[0];
+  });
 
-    if (!disp) {
-    const upcoming = (await db().execute(`
+  const disp = dispResult.rows[0];
+
+  /*
+   * If this panel doesn't currently have a game assigned,
+   * return the upcoming games instead.
+   */
+  if (!disp) {
+    const upcomingResult = await db().execute(`
       SELECT
         gi.sport,
         gi.game_date,
@@ -75,7 +104,8 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
         gi.logo_url,
         gi.kickoff,
         (
-          SELECT MIN(s.dtstart) FROM shifts s
+          SELECT MIN(s.dtstart)
+          FROM shifts s
           WHERE s.sport = gi.sport
             AND substr(s.dtstart, 1, 10) = gi.game_date
         ) AS crew_call
@@ -83,7 +113,9 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
       WHERE gi.game_date >= date('now')
         AND gi.game_date <= date('now', '+30 days')
       ORDER BY gi.game_date, gi.sport
-    `)).rows.map(r => ({
+    `);
+
+    const upcoming: UpcomingGame[] = upcomingResult.rows.map((r) => ({
       sport: r.sport as string,
       game_date: r.game_date as string,
       opponent: (r.opponent as string) ?? null,
@@ -92,40 +124,168 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
       kickoff: (r.kickoff as string) ?? null,
       crew_call: (r.crew_call as string) ?? null,
     }));
-      return { panel, hasContent: false, upcoming };
-    }
+
+    return {
+      panel,
+      hasContent: false,
+      upcoming,
+    };
+  }
+
   const sport = disp.sport as string;
   const display_type = disp.display_type as string;
   const game_date = disp.game_date as string;
-  const department = display_type === "bigscreen" ? "Big Screen" : "Broadcast";
 
+  const department =
+    display_type === "bigscreen" ? "Big Screen" : "Broadcast";
+
+  /*
+   * Date range allows shifts around midnight to be considered
+   * before we convert them to local dates.
+   */
   const dateRange = [
     game_date,
     addDaysLocal(game_date, -1),
     addDaysLocal(game_date, 1),
   ];
 
-  // Shifts (crew)
-  // Shifts (crew) — only shifts whose local start date is the game date
-  // Shifts (crew) — filter to shifts whose Chicago-local start date = game_date
-  const shiftsRaw = (await db().execute({
-    sql: `SELECT employee_name, position, dtstart FROM shifts
-          WHERE sport = ? AND department = ?
-            AND substr(dtstart, 1, 10) IN (?, ?, ?)
-          ORDER BY dtstart`,
+  /*
+   * ------------------------------------------------------------
+   * GAME INFO
+   * ------------------------------------------------------------
+   *
+   * Get all games for this sport/date.
+   *
+   * This MUST happen before filtering shifts because the selected
+   * game's kickoff is used to determine which shifts belong to it.
+   */
+  const gamesResult = await db().execute({
+    sql: `
+      SELECT
+        opponent,
+        opponent_abbr,
+        logo_url,
+        kickoff
+      FROM game_info
+      WHERE sport = ?
+        AND game_date = ?
+      ORDER BY kickoff ASC
+    `,
+    args: [sport, game_date],
+  });
+
+  const games = gamesResult.rows;
+
+  /*
+   * For a doubleheader:
+   *
+   * - Before the first game is within 30 minutes, show the first game.
+   * - Once a game's kickoff is within 30 minutes of now, switch to it.
+   *
+   * This means that at 5:00 PM, a 7:00 PM game is still not selected
+   * if there was an earlier game.
+   */
+  const now = Date.now();
+  const SWITCH_BUFFER_MS = 30 * 60 * 1000;
+
+  let info = games[0];
+
+  for (const g of games) {
+    const k = g.kickoff as string | null;
+
+    if (!k) {
+      continue;
+    }
+
+    if (new Date(k).getTime() - SWITCH_BUFFER_MS <= now) {
+      info = g;
+    }
+  }
+
+  /*
+   * Selected game's kickoff.
+   *
+   * This was previously using `info` before `info` was declared.
+   */
+  const selectedKickoff = (info?.kickoff as string) || null;
+
+  /*
+   * ------------------------------------------------------------
+   * SHIFTS / CREW
+   * ------------------------------------------------------------
+   */
+  const shiftsRawResult = await db().execute({
+    sql: `
+      SELECT
+        employee_name,
+        position,
+        dtstart
+      FROM shifts
+      WHERE sport = ?
+        AND department = ?
+        AND substr(dtstart, 1, 10) IN (?, ?, ?)
+      ORDER BY dtstart
+    `,
     args: [sport, department, ...dateRange],
-  })).rows;
+  });
 
-  const shifts = shiftsRaw.filter(s => isoToLocalDate(s.dtstart as string) === game_date);
+  const shiftsRaw = shiftsRawResult.rows;
 
-  // Position map
-  const posMap = (await db().execute({
-    sql: `SELECT ics_position, short_label, display_order FROM position_map
-          WHERE display_type = ? AND sport = ?`,
+  const GAME_SHIFT_WINDOW_MS = 6 * 60 * 60 * 1000;
+
+  /*
+   * First make sure the shift occurs on the correct local date.
+   *
+   * Then, if a kickoff exists, only include shifts within 6 hours
+   * of that game's kickoff.
+   */
+  const shifts = shiftsRaw.filter((s) => {
+    const dtstart = s.dtstart as string;
+
+    if (isoToLocalDate(dtstart) !== game_date) {
+      return false;
+    }
+
+    if (!selectedKickoff) {
+      return true;
+    }
+
+    const shiftTime = new Date(dtstart).getTime();
+    const kickoffTime = new Date(selectedKickoff).getTime();
+
+    const diff = Math.abs(shiftTime - kickoffTime);
+
+    return diff <= GAME_SHIFT_WINDOW_MS;
+  });
+
+  /*
+   * ------------------------------------------------------------
+   * POSITION MAP
+   * ------------------------------------------------------------
+   */
+  const posMapResult = await db().execute({
+    sql: `
+      SELECT
+        ics_position,
+        short_label,
+        display_order
+      FROM position_map
+      WHERE display_type = ?
+        AND sport = ?
+    `,
     args: [display_type, sport],
-  })).rows;
+  });
 
-  const mapByPos = new Map<string, { short_label: string; display_order: number }>();
+  const posMap = posMapResult.rows;
+
+  const mapByPos = new Map<
+    string,
+    {
+      short_label: string;
+      display_order: number;
+    }
+  >();
+
   for (const p of posMap) {
     mapByPos.set(p.ics_position as string, {
       short_label: p.short_label as string,
@@ -133,93 +293,153 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
     });
   }
 
+  /*
+   * Group employees by their ICS position.
+   */
   const byPosition = new Map<string, string[]>();
+
   for (const s of shifts) {
     const pos = s.position as string;
-    if (!byPosition.has(pos)) byPosition.set(pos, []);
-    byPosition.get(pos)!.push(formatName(s.employee_name as string));
+
+    if (!byPosition.has(pos)) {
+      byPosition.set(pos, []);
+    }
+
+    byPosition.get(pos)!.push(
+      formatName(s.employee_name as string)
+    );
   }
 
+  /*
+   * Build crew rows using the configured position map.
+   */
   const crew: CrewRow[] = [];
   const seen = new Set<string>();
+
   for (const [icsPos, meta] of mapByPos.entries()) {
-    crew.push({ short_label: meta.short_label, display_order: meta.display_order, names: byPosition.get(icsPos) || [] });
+    crew.push({
+      short_label: meta.short_label,
+      display_order: meta.display_order,
+      names: byPosition.get(icsPos) || [],
+    });
+
     seen.add(icsPos);
   }
+
+  /*
+   * Add any positions that aren't configured in position_map.
+   */
   for (const [pos, names] of byPosition.entries()) {
     if (!seen.has(pos)) {
-      crew.push({ short_label: pos.toUpperCase(), display_order: 9999, names });
+      crew.push({
+        short_label: pos.toUpperCase(),
+        display_order: 9999,
+        names,
+      });
     }
   }
+
   crew.sort((a, b) => a.display_order - b.display_order);
 
-  // Game info — pick the correct game for a doubleheader
-  const games = (await db().execute({
-    sql: `SELECT opponent, opponent_abbr, logo_url, kickoff
-          FROM game_info
-          WHERE sport = ? AND game_date = ?
-          ORDER BY kickoff ASC`,
-    args: [sport, game_date],
-  })).rows;
+  /*
+   * ------------------------------------------------------------
+   * CREW CALL
+   * ------------------------------------------------------------
+   *
+   * Crew call is the earliest shift that survived the game
+   * filtering above.
+   */
+  const crewCall =
+    shifts.length > 0
+      ? shifts.reduce((min, s) => {
+          const d = s.dtstart as string;
 
-  // Rule: show latest game whose kickoff - 30min <= now; else earliest
-  const now = Date.now();
-  const SWITCH_BUFFER_MS = 30 * 60 * 1000;
-  let info = games[0];
-  for (const g of games) {
-    const k = g.kickoff as string | null;
-    if (!k) continue;
-    if (new Date(k).getTime() - SWITCH_BUFFER_MS <= now) {
-      info = g;
-    }
-  }
+          return !min || d < min ? d : min;
+        }, "" as string) || null
+      : null;
 
-  // Schedule block: crew_call = earliest ICS shift start
-  const crewCallRow = (await db().execute({
-    sql: `SELECT MIN(dtstart) AS crew_call FROM shifts
-          WHERE sport = ? AND department = ?
-            AND substr(dtstart, 1, 10) IN (?, ?, ?)`,
-    args: [sport, department, ...dateRange],
-  })).rows[0];
+  const gameTime = (info?.kickoff as string) || null;
 
-  const crewCall = shifts.length > 0
-    ? shifts.reduce((min, s) => {
-        const d = s.dtstart as string;
-        return !min || d < min ? d : min;
-      }, "" as string) || null
-    : null;  const gameTime = (info?.kickoff as string) || null;
-
-  const templateRows = (await db().execute({
-    sql: `SELECT label, ref, offset_minutes FROM schedule_template
-          WHERE sport = ? AND display_type = ?`,
+  /*
+   * ------------------------------------------------------------
+   * SCHEDULE
+   * ------------------------------------------------------------
+   */
+  const templateRowsResult = await db().execute({
+    sql: `
+      SELECT
+        label,
+        ref,
+        offset_minutes
+      FROM schedule_template
+      WHERE sport = ?
+        AND display_type = ?
+    `,
     args: [sport, display_type],
-  })).rows;
+  });
 
-  type WithTs = ScheduleRow & { _ts: number };
-  const withTs: WithTs[] = templateRows.map(r => {
+  const templateRows = templateRowsResult.rows;
+
+  type WithTs = ScheduleRow & {
+    _ts: number;
+  };
+
+  const withTs: WithTs[] = templateRows.map((r) => {
     const ref = r.ref as string;
     const off = Number(r.offset_minutes);
-    const anchor = ref === "crew_call" ? crewCall : gameTime;
+
+    const anchor =
+      ref === "crew_call"
+        ? crewCall
+        : gameTime;
+
     return {
       label: r.label as string,
-      time: anchor ? formatTimeLocal(addMinutes(anchor, off)) : null,
-      _ts: anchor ? new Date(addMinutes(anchor, off)).getTime() : Number.MAX_SAFE_INTEGER,
+
+      time: anchor
+        ? formatTimeLocal(addMinutes(anchor, off))
+        : null,
+
+      _ts: anchor
+        ? new Date(addMinutes(anchor, off)).getTime()
+        : Number.MAX_SAFE_INTEGER,
     };
   });
-  withTs.sort((a, b) => a._ts - b._ts);
-  const schedule: ScheduleRow[] = withTs.map(({ label, time }) => ({ label, time }));
 
+  withTs.sort((a, b) => a._ts - b._ts);
+
+  const schedule: ScheduleRow[] = withTs.map(
+    ({ label, time }) => ({
+      label,
+      time,
+    })
+  );
+
+  /*
+   * ------------------------------------------------------------
+   * FINAL DISPLAY STATE
+   * ------------------------------------------------------------
+   */
   return {
     panel,
     hasContent: true,
+
     sport,
+
     displayType: display_type,
+
     gameDate: game_date,
+
     opponent: (info?.opponent as string) ?? null,
+
     logoUrl: (info?.logo_url as string) ?? null,
+
     title: titleFor(sport, display_type),
+
     dateLabel: formatDateLabel(game_date),
+
     crew,
+
     schedule,
   };
 }
