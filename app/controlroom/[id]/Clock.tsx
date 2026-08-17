@@ -55,7 +55,7 @@ export default function Clock() {
         </div>
 
         {/* GOLD BROADCAST ACCENT */}
-        <div className="absolute bottom-0 left-0 h-[3px] w-full bg-gradient-to-r from-[#ffd21a] via-[#ffd21a]/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 h-[3px] w-full bg-gradient-to-r from-white via-white/50 to-transparent" />
       </div>
     </div>
   );
