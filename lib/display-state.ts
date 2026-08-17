@@ -149,11 +149,26 @@ export async function getPanelState(panel: number, date?: string): Promise<Displ
   }
   crew.sort((a, b) => a.display_order - b.display_order);
 
-  // Game info
-  const info = (await db().execute({
-    sql: `SELECT opponent, logo_url, kickoff FROM game_info WHERE sport = ? AND game_date = ?`,
+  // Game info — pick the correct game for a doubleheader
+  const games = (await db().execute({
+    sql: `SELECT opponent, opponent_abbr, logo_url, kickoff
+          FROM game_info
+          WHERE sport = ? AND game_date = ?
+          ORDER BY kickoff ASC`,
     args: [sport, game_date],
-  })).rows[0];
+  })).rows;
+
+  // Rule: show latest game whose kickoff - 30min <= now; else earliest
+  const now = Date.now();
+  const SWITCH_BUFFER_MS = 30 * 60 * 1000;
+  let info = games[0];
+  for (const g of games) {
+    const k = g.kickoff as string | null;
+    if (!k) continue;
+    if (new Date(k).getTime() - SWITCH_BUFFER_MS <= now) {
+      info = g;
+    }
+  }
 
   // Schedule block: crew_call = earliest ICS shift start
   const crewCallRow = (await db().execute({
