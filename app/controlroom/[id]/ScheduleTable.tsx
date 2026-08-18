@@ -54,7 +54,7 @@ bright red:                         isActive ? "bg-[#8b0000]" : "bg-[#101010]"
               key={i}
               className={`border-b border-[#2b2b2b] last:border-b-0 ${
 
-                isActive ? "bg-[#8b0000]" : "bg-[#101010]"
+                isActive ? "bg-[#1f1f1f]" : "bg-[#101010]"
 
               }`}
             >

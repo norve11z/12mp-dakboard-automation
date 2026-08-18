@@ -65,7 +65,7 @@ const crewCellPadding =
         : "3px";
 
 const engineeringFontSize = "30px";
-const engineeringCellPadding = "3px";
+const engineeringCellPadding = "4px";
 
   return (
     <div className="control-room w-screen h-screen bg-black text-white flex flex-col overflow-hidden font-sans">
