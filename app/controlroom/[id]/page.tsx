@@ -52,7 +52,7 @@ const crewFontSize =
             : crewRows === 10
               ? "45px"
               : crewRows <= 17
-                ? "45px"
+                ? "40px"
                 : "35px";
 
 const crewCellPadding =
@@ -61,7 +61,7 @@ const crewCellPadding =
     : crewRows <= 8
       ? "8px"
       : crewRows <= 17
-        ? "8px"
+        ? "7px"
         : "3px";
 
 const engineeringFontSize = "30px";
@@ -426,7 +426,7 @@ const engineeringCellPadding = "3px";
             {/* =======================================================
                 SCHEDULE
             ======================================================= */}
-            {state.schedule && state.schedule.length > 0 && (
+            {!state.engineeringCrew && state.schedule && state.schedule.length > 0 && (
               <section className="schedule-section shrink-0">
                 <SectionHeader
                   title="Game Schedule"
