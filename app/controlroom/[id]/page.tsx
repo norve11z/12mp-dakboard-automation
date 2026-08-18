@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import AutoRefresh from "./AutoRefresh";
 import VideoLoop from "./VideoLoop";
 import type { UpcomingGame } from "@/lib/display-state";
-import { NonGameClock } from "./Clock";
+import { NonGameClock, GameCountdown } from "./Clock";
 import Clock from "./Clock";
 
 
@@ -171,9 +171,9 @@ const crewCellPadding =
           SECTION HEADERS
           ========================================================= */
 
-        .section-header {
-          gap: clamp(7px, 0.65vh, 13px);
-        }
+            .section-header {
+              gap: clamp(7px, 0.65vh, 13px);
+            } 
 
         .section-accent {
           height: clamp(19px, 1.85vh, 36px);
@@ -422,7 +422,10 @@ const crewCellPadding =
             ======================================================= */}
             {state.schedule && state.schedule.length > 0 && (
               <section className="schedule-section shrink-0">
-                <SectionHeader title="Game Schedule" />
+                <SectionHeader
+                  title="Game Schedule"
+                  rightContent={<GameCountdown kickoff={state.kickoff} />}
+                />
 
                 <div className="mt-1 rounded-lg border border-[#2b2b2b] overflow-hidden">
                   <table className="w-full schedule-text font-bold">
@@ -548,7 +551,13 @@ const crewCellPadding =
    SECTION HEADER
    =============================================================== */
 
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({
+  title,
+  rightContent,
+}: {
+  title: string;
+  rightContent?: React.ReactNode;
+}) {
   return (
     <div className="flex items-center section-header">
       <div className="section-accent rounded-full bg-[#650000]" />
@@ -558,6 +567,8 @@ function SectionHeader({ title }: { title: string }) {
       </div>
 
       <div className="flex-1 section-line bg-[#303030]" />
+
+      {rightContent}
     </div>
   );
 }

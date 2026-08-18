@@ -92,28 +92,57 @@ export default function Clock() {
   );
 }
 
+export function GameCountdown({ kickoff }: { kickoff: string | null | undefined }) {
+  const [now, setNow] = useState(new Date());
 
-export function FootballClock() {
-  const { time, day, date } = useClock();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!kickoff) {
+    return null;
+  }
+
+  const difference = new Date(kickoff).getTime() - now.getTime();
+
+  if (difference <= 0) {
+    return null;
+  }
+
+  const totalMinutes = Math.floor(difference / 1000 / 60);
+
+  let countdown = "";
+
+  if (totalMinutes > 90) {
+    const days = Math.ceil(totalMinutes / (60 * 24));
+    countdown = `${days} DAY${days === 1 ? "" : "S"}`;
+  } else {
+    const totalSeconds = Math.floor(difference / 1000);
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    countdown = [
+      hours.toString().padStart(2, "0"),
+      minutes.toString().padStart(2, "0"),
+      seconds.toString().padStart(2, "0"),
+    ].join(":");
+  }
 
   return (
-    <div className="absolute top-3 right-6 z-20">
-        <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-3">
+    <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
+      <span className="font-black tabular-nums text-[#ffd21a]">
+        {countdown}
+      </span>
 
-        {/* TIME */}
-        <div className="text-center text-[40px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
-            {time}
-        </div>
-
-        {/* DAY + DATE */}
-        <div className="mt-2 flex items-center justify-center gap-3 whitespace-nowrap">
-            <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
-            UNTIL KICKOFF
-            </span>
-        </div>
-
-        </div>
-    </div>
+      <span className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#9a9a9a]">
+        UNTIL GAME TIME
+      </span>
+    </span>
   );
 }
-
