@@ -64,6 +64,9 @@ const crewCellPadding =
         ? "8px"
         : "3px";
 
+const engineeringFontSize = "30px";
+const engineeringCellPadding = "3px";
+
   return (
     <div className="control-room w-screen h-screen bg-black text-white flex flex-col overflow-hidden font-sans">
       <AutoRefresh intervalMs={12 * 60 * 60 * 1000} />
@@ -445,19 +448,21 @@ const crewCellPadding =
               <div className="mt-1 h-full overflow-hidden rounded-lg border border-[#2b2b2b]">
                 <table
                   className="w-full font-bold"
-                  style={{
-                    fontSize: crewFontSize,
-                    lineHeight: 1.05,
-                  }}
+                  style={state.engineeringCrew ? { fontSize: engineeringFontSize, lineHeight: 1.05 } : {fontSize: crewFontSize, lineHeight: 1.05}}
                 >
                   <tbody>
                     {state.sport === "Football" && (
                       <tr className="border-b border-[#2b2b2b] bg-[#101010]">
                         <td
                           className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
-                          style={{
+                          style={!state.engineeringCrew ?{
                             paddingTop: crewCellPadding,
                             paddingBottom: crewCellPadding,
+                            paddingLeft: "9px",
+                            paddingRight: "9px",
+                          } : {
+                            paddingTop: engineeringCellPadding,
+                            paddingBottom: engineeringCellPadding,
                             paddingLeft: "9px",
                             paddingRight: "9px",
                           }}
@@ -467,9 +472,14 @@ const crewCellPadding =
 
                         <td
                           className="text-white align-top"
-                          style={{
+                          style={!state.engineeringCrew ?{
                             paddingTop: crewCellPadding,
                             paddingBottom: crewCellPadding,
+                            paddingLeft: "9px",
+                            paddingRight: "9px",
+                          } : {
+                            paddingTop: engineeringCellPadding,
+                            paddingBottom: engineeringCellPadding,
                             paddingLeft: "9px",
                             paddingRight: "9px",
                           }}
@@ -488,9 +498,14 @@ const crewCellPadding =
                         >
                           <td
                             className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
-                            style={{
+                            style={!state.engineeringCrew ?{
                               paddingTop: crewCellPadding,
                               paddingBottom: crewCellPadding,
+                              paddingLeft: "9px",
+                              paddingRight: "9px",
+                            } : {
+                              paddingTop: engineeringCellPadding,
+                              paddingBottom: engineeringCellPadding,
                               paddingLeft: "9px",
                               paddingRight: "9px",
                             }}
@@ -500,9 +515,14 @@ const crewCellPadding =
 
                           <td
                             className="text-white align-top"
-                            style={{
+                            style={!state.engineeringCrew ?{
                               paddingTop: crewCellPadding,
                               paddingBottom: crewCellPadding,
+                              paddingLeft: "9px",
+                              paddingRight: "9px",
+                            } : {
+                              paddingTop: engineeringCellPadding,
+                              paddingBottom: engineeringCellPadding,
                               paddingLeft: "9px",
                               paddingRight: "9px",
                             }}
@@ -529,7 +549,7 @@ const crewCellPadding =
                   <table
                     className="w-full font-bold"
                     style={{
-                      fontSize: crewFontSize,
+                      fontSize: engineeringFontSize,
                       lineHeight: 1.05,
                     }}
                   >
@@ -542,8 +562,8 @@ const crewCellPadding =
                           <td
                             className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
                             style={{
-                              paddingTop: crewCellPadding,
-                              paddingBottom: crewCellPadding,
+                              paddingTop: engineeringCellPadding,
+                              paddingBottom: engineeringCellPadding,
                               paddingLeft: "9px",
                               paddingRight: "9px",
                             }}
@@ -553,8 +573,8 @@ const crewCellPadding =
                           <td
                             className="text-white align-top"
                             style={{
-                              paddingTop: crewCellPadding,
-                              paddingBottom: crewCellPadding,
+                              paddingTop: engineeringCellPadding,
+                              paddingBottom: engineeringCellPadding,
                               paddingLeft: "9px",
                               paddingRight: "9px",
                             }}
