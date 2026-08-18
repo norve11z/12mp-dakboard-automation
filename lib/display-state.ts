@@ -46,6 +46,7 @@ export interface DisplayState {
   schedule?: ScheduleRow[];
   activeScheduleIndex?: number;
   upcoming?: UpcomingGame[];
+  engineeringCrew?: CrewRow[];
 }
 
 function formatName(full: string): string {
@@ -179,7 +180,7 @@ export async function getPanelState(
    * - Once a game's kickoff is within 30 minutes of now, switch to it.
    */
   const now = Date.now();
-  const SWITCH_BUFFER_MS = 30 * 60 * 1000;
+  const SWITCH_BUFFER_MS = 45 * 60 * 1000;
   let info = games[0];
   for (const g of games) {
     const k = g.kickoff as string | null;
@@ -342,6 +343,72 @@ if (selectedKickoff && sameDayShifts.length > 0) {
   crew.sort((a, b) => a.display_order - b.display_order);
 
   /*
+  * ------------------------------------------------------------
+  * ENGINEERING CREW (panel 2 only)
+  * ------------------------------------------------------------
+  */
+  let engineeringCrew: CrewRow[] | undefined;
+
+  if (panel === 2) {
+    const engShiftsResult = await db().execute({
+      sql: `
+        SELECT employee_name, position, dtstart
+        FROM shifts
+        WHERE sport = ?
+          AND department = 'Engineering'
+          AND substr(dtstart, 1, 10) IN (?, ?, ?)
+        ORDER BY dtstart
+      `,
+      args: [sport, ...dateRange],
+    });
+
+    const engSameDay = engShiftsResult.rows.filter(
+      (s) => isoToLocalDate(s.dtstart as string) === game_date
+    );
+
+    let engShifts = engSameDay;
+
+    if (selectedKickoff && engSameDay.length > 0) {
+      const kickoffTime = new Date(selectedKickoff).getTime();
+      let closestShiftTime: number | null = null;
+      let closestDiff = Number.MAX_SAFE_INTEGER;
+
+      for (const s of engSameDay) {
+        const shiftTime = new Date(s.dtstart as string).getTime();
+        const diff = Math.abs(shiftTime - kickoffTime);
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          closestShiftTime = shiftTime;
+        }
+      }
+
+      const GROUP_WINDOW_MS = 30 * 60 * 1000;
+      if (closestShiftTime !== null) {
+        engShifts = engSameDay.filter((s) => {
+          const t = new Date(s.dtstart as string).getTime();
+          return Math.abs(t - closestShiftTime) <= GROUP_WINDOW_MS;
+        });
+      }
+    }
+
+    const engByPosition = new Map<string, string[]>();
+    for (const s of engShifts) {
+      const pos = s.position as string;
+      if (!engByPosition.has(pos)) engByPosition.set(pos, []);
+      engByPosition.get(pos)!.push(formatName(s.employee_name as string));
+    }
+
+    engineeringCrew = Array.from(engByPosition.entries()).map(
+      ([pos, names], i) => ({
+        short_label: pos.toUpperCase(),
+        display_order: i,
+        names,
+      })
+    );
+  }
+
+
+  /*
    * ------------------------------------------------------------
    * CREW CALL
    * ------------------------------------------------------------
@@ -416,5 +483,6 @@ if (selectedKickoff && sameDayShifts.length > 0) {
     dateLabel: formatDateLabel(game_date),
     crew,
     schedule,
+    engineeringCrew,
   };
 }

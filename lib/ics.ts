@@ -2,7 +2,7 @@ import ICAL from "ical.js";
 import { db } from "./db";
 
 const SUMMARY_RE = /^(.+?)\s*\(Shift as (.+?) at (.+?) at (.+?)\)\s*$/;
-const IGNORED_DEPARTMENTS = new Set(["Post-Production", "Engineering"]);
+const IGNORED_DEPARTMENTS = new Set(["Post-Production"]);
 
 const ALLOWED_SPORTS = new Set([
   "Football", "Baseball", "Softball",

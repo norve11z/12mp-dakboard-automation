@@ -151,3 +151,16 @@ ON position_map(display_type, sport);
 CREATE INDEX IF NOT EXISTS
   idx_schedule_template_sport_display
 ON schedule_template(sport, display_type);
+
+CREATE TABLE IF NOT EXISTS scheduled_refreshes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sport TEXT NOT NULL,
+  game_date TEXT NOT NULL,
+  switch_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  executed_at TEXT,
+  UNIQUE(sport, game_date, switch_at)
+);
+
+CREATE INDEX IF NOT EXISTS idx_scheduled_refreshes_switch_at
+  ON scheduled_refreshes(switch_at);

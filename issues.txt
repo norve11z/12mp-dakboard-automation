@@ -1,4 +1,2 @@
-- on day of 2 games make sure the dakboard is refresh 30 min before next gameday
 - shifts display order buggy not showing correct order in all sports or somehow filtering out soccer or 8/22
 - add engineers to pcr 2 (try to fit game modal, sachedule, broadcast& engineering staff, and jonny google sheet) on same page
-- add a football countdown (highlight which time schedule segment is current)

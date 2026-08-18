@@ -12,6 +12,7 @@ export default function ScheduleTable({ rows }: { rows: ScheduleRow[] }) {
   }, []);
 
   /* Find active row: latest row whose startTime <= now
+  */
   let activeIndex = -1;
   for (let i = 0; i < rows.length; i++) {
     const st = rows[i].startTime;
@@ -19,16 +20,29 @@ export default function ScheduleTable({ rows }: { rows: ScheduleRow[] }) {
       activeIndex = i;
     }
   }
-*/
 
-  // Find active row: latest row whose startTime <= now, default to 0
-    let activeIndex = rows.length > 0 ? 0 : -1;
-    for (let i = 0; i < rows.length; i++) {
+  // highlights first row (for testing)
+  /*
+  let activeIndex = rows.length > 0 ? 0 : -1;
+  for (let i = 0; i < rows.length; i++) {
     const st = rows[i].startTime;
     if (st && new Date(st).getTime() <= now) {
         activeIndex = i;
     }
-    }
+}
+*/
+
+/*
+possible game schedule highlight colors:
+intiial light maroon:               isActive ? "bg-[#500000]" : "bg-[#101010]"
+faded yellow/gold:                  isActive ? "bg-[#1a1600] border-l-4 border-[#ffd21a]" : "bg-[#101010]"
+light grey:                         isActive ? "bg-[#1f1f1f]" : "bg-[#101010]"
+darker maroon:                      isActive ? "bg-[#2a0808]" : "bg-[#101010]"
+just left gold vertical bar:        isActive ? "bg-[#101010] border-l-4 border-[#ffd21a]" : "bg-[#101010]"
+dark maroon with red bar:           isActive ? "bg-[#1a0505] border-l-4 border-[#ff4d3d]" : "bg-[#101010]"
+bright red:                         isActive ? "bg-[#8b0000]" : "bg-[#101010]"
+
+*/
 
   return (
     <table className="w-full schedule-text font-bold">
@@ -39,7 +53,9 @@ export default function ScheduleTable({ rows }: { rows: ScheduleRow[] }) {
             <tr
               key={i}
               className={`border-b border-[#2b2b2b] last:border-b-0 ${
-                isActive ? "bg-[#500000]" : "bg-[#101010]"
+
+                isActive ? "bg-[#8b0000]" : "bg-[#101010]"
+
               }`}
             >
               <td

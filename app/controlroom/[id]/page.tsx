@@ -6,6 +6,7 @@ import type { UpcomingGame } from "@/lib/display-state";
 import { NonGameClock, GameCountdown } from "./Clock";
 import Clock from "./Clock";
 import ScheduleTable from "./ScheduleTable";
+import RefreshPoller from "./RefreshPoller";
 
 
 const VIDEOS = [
@@ -66,6 +67,7 @@ const crewCellPadding =
   return (
     <div className="control-room w-screen h-screen bg-black text-white flex flex-col overflow-hidden font-sans">
       <AutoRefresh intervalMs={12 * 60 * 60 * 1000} />
+      <RefreshPoller />
 
       <style>{`
         .control-room {
@@ -515,6 +517,59 @@ const crewCellPadding =
                 </table>
               </div>
             </section>
+            
+            {/* =======================================================
+                ENGINEERING (panel 2 only)
+            ======================================================= */}
+            {state.engineeringCrew && state.engineeringCrew.length > 0 && (
+              <section className="crew-section shrink-0 overflow-hidden">
+                <SectionHeader title="Engineering Staff" />
+
+                <div className="mt-1 overflow-hidden rounded-lg border border-[#2b2b2b]">
+                  <table
+                    className="w-full font-bold"
+                    style={{
+                      fontSize: crewFontSize,
+                      lineHeight: 1.05,
+                    }}
+                  >
+                    <tbody>
+                      {state.engineeringCrew.map((row, i) => (
+                        <tr
+                          key={i}
+                          className="border-b border-[#2b2b2b] bg-[#101010] last:border-b-0"
+                        >
+                          <td
+                            className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
+                            style={{
+                              paddingTop: crewCellPadding,
+                              paddingBottom: crewCellPadding,
+                              paddingLeft: "9px",
+                              paddingRight: "9px",
+                            }}
+                          >
+                            {row.short_label}
+                          </td>
+                          <td
+                            className="text-white align-top"
+                            style={{
+                              paddingTop: crewCellPadding,
+                              paddingBottom: crewCellPadding,
+                              paddingLeft: "9px",
+                              paddingRight: "9px",
+                            }}
+                          >
+                            {row.names.map((name, ni) => (
+                              <div key={ni}>{name}</div>
+                            ))}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
           </main>
 
           {/* =========================================================
