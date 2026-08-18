@@ -5,6 +5,7 @@ import VideoLoop from "./VideoLoop";
 import type { UpcomingGame } from "@/lib/display-state";
 import { NonGameClock, GameCountdown } from "./Clock";
 import Clock from "./Clock";
+import ScheduleTable from "./ScheduleTable";
 
 
 const VIDEOS = [
@@ -427,30 +428,9 @@ const crewCellPadding =
                   rightContent={<GameCountdown kickoff={state.kickoff} />}
                 />
 
-                <div className="mt-1 rounded-lg border border-[#2b2b2b] overflow-hidden">
-                  <table className="w-full schedule-text font-bold">
-                    <tbody>
-                      {state.schedule.map((s, i) => (
-                        <tr
-                          key={i}
-                          className="border-b border-[#2b2b2b] bg-[#101010] last:border-b-0"
-                        >
-                          <td className="schedule-cell text-[#c9cbcd] uppercase tracking-wide w-1/2">
-                            {s.label}
-                          </td>
-
-                          <td className="schedule-cell text-right text-[#ffd21a]">
-                            {s.time || (
-                              <span className="text-[#777]">
-                                TBD
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="mt-1 rounded-lg border border-[#2b2b2b] overflow-hidden">
+                <ScheduleTable rows={state.schedule} />
+              </div>
               </section>
             )}
 

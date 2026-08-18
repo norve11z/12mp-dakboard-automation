@@ -17,6 +17,7 @@ export interface CrewRow {
 export interface ScheduleRow {
   label: string;
   time: string | null;
+  startTime?: string;
 }
 
 export interface UpcomingGame {
@@ -43,6 +44,7 @@ export interface DisplayState {
   dateLabel?: string;
   crew?: CrewRow[];
   schedule?: ScheduleRow[];
+  activeScheduleIndex?: number;
   upcoming?: UpcomingGame[];
 }
 
@@ -154,7 +156,6 @@ export async function getPanelState(
    * ------------------------------------------------------------
    * GAME INFO
    * ------------------------------------------------------------
-   * Get all games for this sport/date.
    */
   const gamesResult = await db().execute({
     sql: `
@@ -170,7 +171,6 @@ export async function getPanelState(
     `,
     args: [sport, game_date],
   });
-
   const games = gamesResult.rows;
 
   /*
@@ -180,16 +180,12 @@ export async function getPanelState(
    */
   const now = Date.now();
   const SWITCH_BUFFER_MS = 30 * 60 * 1000;
-
   let info = games[0];
-
   for (const g of games) {
     const k = g.kickoff as string | null;
-
     if (!k) {
       continue;
     }
-
     if (new Date(k).getTime() - SWITCH_BUFFER_MS <= now) {
       info = g;
     }
@@ -385,28 +381,23 @@ if (selectedKickoff && sameDayShifts.length > 0) {
   const withTs: WithTs[] = templateRows.map((r) => {
     const ref = r.ref as string;
     const off = Number(r.offset_minutes);
-    const anchor =
-      ref === "crew_call"
-        ? crewCall
-        : gameTime;
+    const anchor = ref === "crew_call" ? crewCall : gameTime;
+    const iso = anchor ? addMinutes(anchor, off) : null;
     return {
       label: r.label as string,
-      time: anchor
-        ? formatTimeLocal(addMinutes(anchor, off))
-        : null,
-      _ts: anchor
-        ? new Date(addMinutes(anchor, off)).getTime()
-        : Number.MAX_SAFE_INTEGER,
+      time: iso ? formatTimeLocal(iso) : null,
+      startTime: iso ?? undefined,
+      _ts: iso ? new Date(iso).getTime() : Number.MAX_SAFE_INTEGER,
     };
   });
 
   withTs.sort((a, b) => a._ts - b._ts);
-  const schedule: ScheduleRow[] = withTs.map(
-    ({ label, time }) => ({
-      label,
-      time,
-    })
-  );
+
+  const schedule: ScheduleRow[] = withTs.map(({ label, time, startTime }) => ({
+    label,
+    time,
+    startTime,
+  }));
   /*
    * ------------------------------------------------------------
    * FINAL DISPLAY STATE
