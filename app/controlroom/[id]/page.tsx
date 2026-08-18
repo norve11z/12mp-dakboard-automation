@@ -439,7 +439,7 @@ const crewCellPadding =
             {/* =======================================================
                 CREW
             ======================================================= */}
-            <section className="crew-section flex-1 min-h-0 overflow-hidden">
+            <section className="crew-section shrink-0 overflow-hidden">
               <SectionHeader title={state.displayType === "bigscreen" ? "Big Screen Staff" : "Broadcast Staff"} />
 
               <div className="mt-1 h-full overflow-hidden rounded-lg border border-[#2b2b2b]">
@@ -517,12 +517,12 @@ const crewCellPadding =
                 </table>
               </div>
             </section>
-            
+
             {/* =======================================================
                 ENGINEERING (panel 2 only)
             ======================================================= */}
             {state.engineeringCrew && state.engineeringCrew.length > 0 && (
-              <section className="crew-section shrink-0 overflow-hidden">
+              <section className="shrink-0 overflow-hidden mt-1">
                 <SectionHeader title="Engineering Staff" />
 
                 <div className="mt-1 overflow-hidden rounded-lg border border-[#2b2b2b]">
