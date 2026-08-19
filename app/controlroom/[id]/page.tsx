@@ -480,6 +480,13 @@ const engineeringCellPadding = "5px";
             {state.pcr && (
               <PcrSection pcr={state.pcr} />
             )}
+            <section>
+            <img
+                src="/12mp-logo.png"
+                alt=""
+                className="max-w-full max-h-14 object-contain bg-white rounded border-2 border-white p-0.5"
+             />
+            </section>
             {/* =======================================================
                 CREW
             ======================================================= */}
