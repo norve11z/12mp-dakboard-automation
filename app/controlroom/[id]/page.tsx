@@ -7,6 +7,7 @@ import { NonGameClock, GameCountdown } from "./Clock";
 import Clock from "./Clock";
 import ScheduleTable from "./ScheduleTable";
 import RefreshPoller from "./RefreshPoller";
+import type { DisplayState } from "@/lib/display-state";
 
 
 const VIDEOS = [
@@ -590,6 +591,12 @@ const engineeringCellPadding = "4px";
                 </div>
               </section>
             )}
+            {/* =======================================================
+                PCR ASSIGNMENTS (panel 2 only)
+            ======================================================= */}
+            {state.pcr && (
+              <PcrSection pcr={state.pcr} />
+            )}
           </main>
 
           {/* =========================================================
@@ -625,6 +632,85 @@ function SectionHeader({
 
       {rightContent}
     </div>
+  );
+}
+
+
+function PcrSection({ pcr }: { pcr: NonNullable<DisplayState["pcr"]> }) {
+  const cellBase = "px-2 py-1 border border-[#2b2b2b] text-white";
+  const labelCls = `${cellBase} bg-[#1a1a1a] text-[#c9cbcd] uppercase tracking-wide font-bold text-sm`;
+  const valueCls = `${cellBase} bg-[#0a0a0a] font-bold text-sm`;
+  const headerCls = `${cellBase} bg-[#500000] text-center uppercase tracking-wider font-black text-sm`;
+
+  const renderRows = (rows: { label: string; value: string }[]) =>
+    rows.map((r, i) => (
+      <tr key={i}>
+        <td className={labelCls}>{r.label}</td>
+        <td className={valueCls}>{r.value}</td>
+      </tr>
+    ));
+
+  const renderPcr = (p: typeof pcr.pcr1) => (
+    <table className="w-full border-collapse">
+      <tbody>
+        <tr>
+          <td colSpan={2} className={`${headerCls} text-white`}>
+            {p.assignment || "—"}
+          </td>
+        </tr>
+        {renderRows(p.rows)}
+      </tbody>
+    </table>
+  );
+
+  return (
+    <section className="shrink-0 overflow-hidden mt-2">
+      <SectionHeader title={`PCR Assignments — ${pcr.eventTitle}`} />
+
+      <div className="mt-1 grid grid-cols-2 gap-2">
+        {/* Row 1: PCR 1 + PCR 2 */}
+        <div>
+          <div className={headerCls}>PCR 1</div>
+          {renderPcr(pcr.pcr1)}
+        </div>
+        <div>
+          <div className={headerCls}>PCR 2</div>
+          {renderPcr(pcr.pcr2)}
+        </div>
+
+        {/* Row 2: PCR 3 + PCR 4 */}
+        <div>
+          <div className={headerCls}>PCR 3</div>
+          {renderPcr(pcr.pcr3)}
+        </div>
+        <div>
+          <div className={headerCls}>PCR 4</div>
+          {renderPcr(pcr.pcr4)}
+        </div>
+
+        {/* Row 3: Dreamcatcher + (Shading over Audio) */}
+        <div>
+          <div className={headerCls}>Dreamcatcher</div>
+          <table className="w-full border-collapse">
+            <tbody>{renderRows(pcr.dreamcatcher)}</tbody>
+          </table>
+        </div>
+        <div className="space-y-2">
+          <div>
+            <div className={headerCls}>Shading</div>
+            <table className="w-full border-collapse">
+              <tbody>{renderRows(pcr.shading)}</tbody>
+            </table>
+          </div>
+          <div>
+            <div className={headerCls}>Audio</div>
+            <table className="w-full border-collapse">
+              <tbody>{renderRows(pcr.audio)}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import { TZ } from "@/lib/tz";
 
 function useClock() {
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-
+    setNow(new Date());
+    const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  if (!now) return { time: "", day: "", date: "" };
 
   const time = now.toLocaleTimeString("en-US", {
     timeZone: TZ,

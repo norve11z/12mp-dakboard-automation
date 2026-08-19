@@ -164,3 +164,12 @@ CREATE TABLE IF NOT EXISTS scheduled_refreshes (
 
 CREATE INDEX IF NOT EXISTS idx_scheduled_refreshes_switch_at
   ON scheduled_refreshes(switch_at);
+
+  CREATE TABLE IF NOT EXISTS pcr_state (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  last_updated TEXT NOT NULL DEFAULT (datetime('now')),
+  source TEXT NOT NULL DEFAULT 'sheet',
+  data TEXT
+);
+
+INSERT OR IGNORE INTO pcr_state (id) VALUES (1);

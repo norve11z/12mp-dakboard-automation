@@ -7,6 +7,7 @@ import {
   addMinutes,
   addDaysLocal,
 } from "./tz";
+import { getPcrAssignments, type PcrAssignments } from "./pcr";
 
 export interface CrewRow {
   short_label: string;
@@ -47,6 +48,7 @@ export interface DisplayState {
   activeScheduleIndex?: number;
   upcoming?: UpcomingGame[];
   engineeringCrew?: CrewRow[];
+  pcr?: PcrAssignments | null;
 }
 
 function formatName(full: string): string {
@@ -465,6 +467,12 @@ if (selectedKickoff && sameDayShifts.length > 0) {
     time,
     startTime,
   }));
+
+
+  let pcr: PcrAssignments | null = null;
+  if (panel === 2) {
+    pcr = await getPcrAssignments();
+  }
   /*
    * ------------------------------------------------------------
    * FINAL DISPLAY STATE
@@ -484,5 +492,6 @@ if (selectedKickoff && sameDayShifts.length > 0) {
     crew,
     schedule,
     engineeringCrew,
+    pcr,
   };
 }
