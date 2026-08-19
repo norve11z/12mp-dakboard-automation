@@ -1,11 +1,17 @@
 import type { PcrAssignments } from "./types";
 
 export async function fetchFromSheet(): Promise<PcrAssignments | null> {
+
   const url = process.env.PCR_SHEET_CSV_URL;
+  console.log("PCR fetch:", {
+  url: process.env.PCR_SHEET_CSV_URL,
+  hasUrl: !!process.env.PCR_SHEET_CSV_URL,
+});
   if (!url) return null;
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) return null;
+
 
   const rows = parseCsv(await res.text());
 
