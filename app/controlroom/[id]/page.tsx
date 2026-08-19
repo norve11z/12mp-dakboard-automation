@@ -481,7 +481,7 @@ const engineeringCellPadding = "5px";
               <PcrSection pcr={state.pcr} />
             )}
             {state.pcr && (
-              <section className="flex justify-center items-center">
+              <section className="flex justify-center items-center mt-2">
                 <img
                   src="/qrcode.png"
                   alt=""
