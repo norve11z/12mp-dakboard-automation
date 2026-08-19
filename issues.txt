@@ -1,3 +1,3 @@
 - shifts display order buggy not showing correct order in all sports or somehow filtering out soccer or 8/22
-- add engineers to pcr 2 (jonny google sheet)
 - make an admin setting on front page to select how many days out to show the closest game (vs custom date or current day)
+fix engineer sizing for football games
