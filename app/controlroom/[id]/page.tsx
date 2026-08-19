@@ -220,6 +220,44 @@ const engineeringCellPadding = "4px";
         }
 
         /* =========================================================
+        PCR ASSIGNMENTS
+        ========================================================= */
+
+      .pcr-section {
+        margin-top: clamp(4px, 0.4vh, 8px);
+      }
+
+      .pcr-grid {
+        gap: clamp(4px, 0.4vh, 8px);
+      }
+
+      .pcr-box {
+        min-width: 0;
+      }
+
+      .pcr-table {
+        font-size: clamp(10px, 1.05vh, 18px);
+        line-height: 1.05;
+      }
+
+      .pcr-cell {
+        padding: clamp(2px, 0.25vh, 5px) 7px;
+      }
+
+      .pcr-header {
+        padding: clamp(3px, 0.3vh, 6px) 7px;
+        font-size: clamp(10px, 1.05vh, 18px);
+      }
+
+      .pcr-assignment {
+        background: #101010;
+        color: #ffffff;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+        /* =========================================================
           1080 x 1920 VERTICAL DISPLAY
           ========================================================= */
 
@@ -637,77 +675,104 @@ function SectionHeader({
 
 
 function PcrSection({ pcr }: { pcr: NonNullable<DisplayState["pcr"]> }) {
-  const cellBase = "px-2 py-1 border border-[#2b2b2b] text-white";
-  const labelCls = `${cellBase} bg-[#1a1a1a] text-[#c9cbcd] uppercase tracking-wide font-bold text-sm`;
-  const valueCls = `${cellBase} bg-[#0a0a0a] font-bold text-sm`;
-  const headerCls = `${cellBase} bg-[#500000] text-center uppercase tracking-wider font-black text-sm`;
+  const cellBase = "border border-[#2b2b2b] pcr-cell";
+
+  const labelCls =
+    `${cellBase} bg-[#151515] text-[#c9cbcd] uppercase tracking-wide font-bold w-[34%]`;
+
+  const valueCls =
+    `${cellBase} bg-[#090909] text-white font-bold`;
+
+  const headerCls =
+    "pcr-header bg-[#300000] text-white text-center uppercase tracking-wider font-black";
 
   const renderRows = (rows: { label: string; value: string }[]) =>
     rows.map((r, i) => (
-      <tr key={i}>
-        <td className={labelCls}>{r.label}</td>
-        <td className={valueCls}>{r.value}</td>
+      <tr key={i} className="border-b border-[#2b2b2b] last:border-b-0">
+        <td className={labelCls}>
+          {r.label || "—"}
+        </td>
+
+        <td className={valueCls}>
+          {r.value || "—"}
+        </td>
       </tr>
     ));
 
-  const renderPcr = (p: typeof pcr.pcr1) => (
-    <table className="w-full border-collapse">
-      <tbody>
-        <tr>
-          <td colSpan={2} className={`${headerCls} text-white`}>
-            {p.assignment || "—"}
-          </td>
-        </tr>
-        {renderRows(p.rows)}
-      </tbody>
-    </table>
+  const renderPcr = (
+    number: number,
+    p: typeof pcr.pcr1
+  ) => (
+    <div className="pcr-box rounded-md overflow-hidden border border-[#2b2b2b]">
+      <div className={headerCls}>
+        PCR {number}{p.assignment ? ` — ${p.assignment}` : ""}
+      </div>
+
+
+
+      <table className="w-full border-collapse pcr-table">
+        <tbody>
+          {renderRows(p.rows)}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderSimple = (
+    title: string,
+    rows: { label: string; value: string }[]
+  ) => (
+    <div className="pcr-box rounded-md overflow-hidden border border-[#2b2b2b]">
+      <div className={headerCls}>
+        {title}
+      </div>
+
+      <table className="w-full border-collapse pcr-table">
+        <tbody>
+          {renderRows(rows)}
+        </tbody>
+      </table>
+    </div>
   );
 
   return (
-    <section className="shrink-0 overflow-hidden mt-2">
-      <SectionHeader title={`PCR Assignments — ${pcr.eventTitle}`} />
+    <section className="pcr-section shrink-0 overflow-hidden">
+      <div className="flex items-center section-header">
+        <div className="section-accent rounded-full bg-[#650000]" />
 
-      <div className="mt-1 grid grid-cols-2 gap-2">
-        {/* Row 1: PCR 1 + PCR 2 */}
-        <div>
-          <div className={headerCls}>PCR 1</div>
-          {renderPcr(pcr.pcr1)}
-        </div>
-        <div>
-          <div className={headerCls}>PCR 2</div>
-          {renderPcr(pcr.pcr2)}
+        <div className="section-title font-black tracking-[0.22em] uppercase text-white">
+          PCR Assignments
         </div>
 
-        {/* Row 2: PCR 3 + PCR 4 */}
-        <div>
-          <div className={headerCls}>PCR 3</div>
-          {renderPcr(pcr.pcr3)}
-        </div>
-        <div>
-          <div className={headerCls}>PCR 4</div>
-          {renderPcr(pcr.pcr4)}
-        </div>
+        <div className="flex-1 section-line bg-[#303030]" />
 
-        {/* Row 3: Dreamcatcher + (Shading over Audio) */}
-        <div>
-          <div className={headerCls}>Dreamcatcher</div>
-          <table className="w-full border-collapse">
-            <tbody>{renderRows(pcr.dreamcatcher)}</tbody>
-          </table>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-[20px] font-bold tracking-wider uppercase text-[#8f9398] truncate">
+            {pcr.eventTitle}
+          </span>
+
+          <img
+            src="/pcr-logo.png"
+            alt=""
+            className="w-8 h-8 object-contain shrink-0"
+          />
         </div>
-        <div className="space-y-2">
-          <div>
-            <div className={headerCls}>Shading</div>
-            <table className="w-full border-collapse">
-              <tbody>{renderRows(pcr.shading)}</tbody>
-            </table>
-          </div>
-          <div>
-            <div className={headerCls}>Audio</div>
-            <table className="w-full border-collapse">
-              <tbody>{renderRows(pcr.audio)}</tbody>
-            </table>
-          </div>
+      </div>
+
+      <div className="mt-1 grid grid-cols-2 pcr-grid">
+        {renderPcr(1, pcr.pcr1)}
+        {renderPcr(2, pcr.pcr2)}
+        {renderPcr(3, pcr.pcr3)}
+        {renderPcr(4, pcr.pcr4)}
+
+        {renderSimple(
+          "Dreamcatcher",
+          pcr.dreamcatcher
+        )}
+
+        <div className="grid gap-1 pcr-box">
+          {renderSimple("Shading", pcr.shading)}
+          {renderSimple("Audio", pcr.audio)}
         </div>
       </div>
     </section>
