@@ -66,7 +66,7 @@ const crewCellPadding =
         : "3px";
 
 const engineeringFontSize = "30px";
-const engineeringCellPadding = "4px";
+const engineeringCellPadding = "5px";
 
   return (
     <div className="control-room w-screen h-screen bg-black text-white flex flex-col overflow-hidden font-sans">
@@ -224,11 +224,11 @@ const engineeringCellPadding = "4px";
         ========================================================= */
 
       .pcr-section {
-        margin-top: clamp(4px, 0.4vh, 8px);
+        margin-top: clamp(5px, 0.4vh, 8px);
       }
 
       .pcr-grid {
-        gap: clamp(4px, 0.4vh, 8px);
+        gap: clamp(5px, 0.4vh, 8px);
       }
 
       .pcr-box {
@@ -236,17 +236,17 @@ const engineeringCellPadding = "4px";
       }
 
       .pcr-table {
-        font-size: clamp(10px, 1.05vh, 18px);
+        font-size: clamp(12px, 1.05vh, 20px);
         line-height: 1.05;
       }
 
       .pcr-cell {
-        padding: clamp(2px, 0.25vh, 5px) 7px;
+        padding: clamp(3px, 0.25vh, 5px) 7px;
       }
 
       .pcr-header {
         padding: clamp(3px, 0.3vh, 6px) 7px;
-        font-size: clamp(10px, 1.05vh, 18px);
+        font-size: clamp(12px, 1.05vh, 20px);
       }
 
       .pcr-assignment {
