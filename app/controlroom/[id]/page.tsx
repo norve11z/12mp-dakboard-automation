@@ -241,14 +241,14 @@ const engineeringCellPadding = "5px";
       }
 
       .pcr-cell {
-        padding: clamp(4px, 0.35vh, 7px) 9px;
+        padding: clamp(4px, 0.35vh, 7px) 8px;
       }
 
       .pcr-header {
         padding: clamp(5px, 0.4vh, 8px) 9px;
         font-size: clamp(15px, 1.35vh, 26px);
       }
-        
+
       .pcr-assignment {
         background: #101010;
         color: #ffffff;
