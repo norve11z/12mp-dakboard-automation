@@ -480,11 +480,11 @@ const engineeringCellPadding = "5px";
             {state.pcr && (
               <PcrSection pcr={state.pcr} />
             )}
-            <section className="flex justify-center items-center py-2">
+            <section className="flex justify-center items-center">
               <img
                 src="/qrcode.png"
                 alt=""
-                className="w-24 h-24 object-contain bg-white rounded border-2 border-white p-1"
+                className="w-28 h-28 object-contain"
               />
             </section>
 
