@@ -236,19 +236,19 @@ const engineeringCellPadding = "5px";
       }
 
       .pcr-table {
-        font-size: clamp(12px, 1.05vh, 20px);
-        line-height: 1.05;
+        font-size: clamp(15px, 1.35vh, 26px);
+        line-height: 1.1;
       }
 
       .pcr-cell {
-        padding: clamp(3px, 0.25vh, 5px) 7px;
+        padding: clamp(4px, 0.35vh, 7px) 9px;
       }
 
       .pcr-header {
-        padding: clamp(3px, 0.3vh, 6px) 7px;
-        font-size: clamp(12px, 1.05vh, 20px);
+        padding: clamp(5px, 0.4vh, 8px) 9px;
+        font-size: clamp(15px, 1.35vh, 26px);
       }
-
+        
       .pcr-assignment {
         background: #101010;
         color: #ffffff;
@@ -480,13 +480,14 @@ const engineeringCellPadding = "5px";
             {state.pcr && (
               <PcrSection pcr={state.pcr} />
             )}
-            <section>
-            <img
-                src="/12mp-logo.png"
+            <section className="flex justify-center items-center py-2">
+              <img
+                src="/qrcode.png"
                 alt=""
-                className="max-w-full max-h-14 object-contain bg-white rounded border-2 border-white p-0.5"
-             />
+                className="w-24 h-24 object-contain bg-white rounded border-2 border-white p-1"
+              />
             </section>
+
             {/* =======================================================
                 CREW
             ======================================================= */}
