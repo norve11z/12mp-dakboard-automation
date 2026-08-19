@@ -236,12 +236,12 @@ const engineeringCellPadding = "5px";
       }
 
       .pcr-table {
-        font-size: clamp(15px, 1.35vh, 26px);
-        line-height: 1.1;
+        font-size: clamp(12px, 1.05vh, 20px);
+        line-height: 1.05;
       }
 
       .pcr-cell {
-        padding: clamp(4px, 0.35vh, 7px) 8px;
+        padding: clamp(3px, 0.25vh, 5px) 7px;
       }
 
       .pcr-header {
