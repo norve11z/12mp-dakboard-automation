@@ -749,12 +749,6 @@ function PcrSection({ pcr }: { pcr: NonNullable<DisplayState["pcr"]> }) {
           <span className="text-[20px] font-bold tracking-wider uppercase text-[#8f9398] truncate">
             {pcr.eventTitle}
           </span>
-
-          <img
-            src="/pcr-logo.png"
-            alt=""
-            className="w-8 h-8 object-contain shrink-0"
-          />
         </div>
       </div>
 
