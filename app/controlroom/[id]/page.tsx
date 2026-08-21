@@ -816,7 +816,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
       </div>
 
       {/* Top 1/3 — logo */}
-      <div className="w-full relative" style={{ height: "33.333%" }}>
+      <div className="w-full relative" style={{ height: "30%" }}>
         <img
           src="/12mp-logo.png"
           alt="12th Man Productions"
@@ -827,7 +827,7 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
 
 
       {/* Bottom 2/3 — calendar */}
-      <div className="flex-1 min-h-0 px-6 pb-6 pt-2 flex flex-col">
+      <div className="flex-1 min-h-0 px-6 pb-6 pt-10 flex flex-col">
         <div className="flex items-baseline justify-between mb-3 px-1">
           <div className="text-2xl font-black tracking-[0.25em] uppercase text-white">
             Upcoming 30 Days
