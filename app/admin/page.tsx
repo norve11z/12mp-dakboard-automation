@@ -38,6 +38,7 @@ export default function AdminDashboard() {
   const [showDanger, setShowDanger] = useState(false);
   const [oldDays, setOldDays] = useState(7);
   const [refreshingDakboard, setRefreshingDakboard] = useState(false);
+  const [lookaheadDays, setLookaheadDays] = useState<number>(0);
 
   const loadAll = useCallback(async () => {
     const res = await fetch("/api/dashboard", {
@@ -54,6 +55,7 @@ export default function AdminDashboard() {
     setGames(data.games);
     setStats(data.stats);
     setOverride(data.display_date_override || "");
+    setLookaheadDays(data.lookahead_days ?? 0);
 
     setSelectedDate(
       current => current || data.display_date_override || data.today
@@ -303,30 +305,73 @@ const panelsForGame = (game: any) => {
 
         {/* Date selector */}
         <div className="mt-6 bg-[#111113] border border-[#232326] rounded-sm p-4 flex items-center gap-3 flex-wrap">
-          <label className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">Display Date</label>
+          <label className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70]">
+            Display Date
+          </label>
+
           <input
             type="date"
             value={override || selectedDate}
-            onChange={e => {
+            onChange={(e) => {
               setDateOverride(e.target.value);
               setSelectedDate(e.target.value);
             }}
             className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-[#7a1f1f]"
           />
+
+          <label className="amdb-mono text-[10px] uppercase tracking-widest text-[#6b6b70] ml-2">
+            Lookahead
+          </label>
+
+          <select
+            value={lookaheadDays}
+            onChange={async (e) => {
+              const v = Number(e.target.value);
+              setLookaheadDays(v);
+              await fetch("/api/settings/lookahead", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ days: v }),
+              });
+            }}
+            className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-3 py-1.5 rounded-sm text-sm focus:outline-none focus:border-[#7a1f1f]"
+          >
+            <option value="0">Today only</option>
+            <option value="1">1 day out</option>
+            <option value="3">3 days out</option>
+            <option value="7">1 week out</option>
+          </select>
+
           <button
             onClick={() => {
-              const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Chicago" });
+              const today = new Date().toLocaleDateString("en-CA", {
+                timeZone: "America/Chicago",
+              });
               setDateOverride("");
               setSelectedDate(today);
             }}
             className="amdb-mono px-3 py-1.5 text-xs uppercase tracking-wide bg-[#1a1a1d] border border-[#2c2c30] rounded-sm hover:border-[#47474d] hover:bg-[#202023] transition-colors"
           >
-            Reset to Today
+            Clear Override
           </button>
+
           <div className="amdb-mono text-xs ml-2">
-            {override
-              ? <span className="text-[#c99a3e] flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#c99a3e] amdb-tally inline-block" />Override active — panels show {override}</span>
-              : <span className="text-[#6b6b70] flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#4a9d5f] amdb-tally inline-block" />Panels show today (auto)</span>}
+            {override ? (
+              <span className="text-[#c99a3e] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#c99a3e] amdb-tally inline-block" />
+                Override active — panels show {override}
+              </span>
+            ) : lookaheadDays > 0 ? (
+              <span className="text-[#4a9d5f] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4a9d5f] amdb-tally inline-block" />
+                Auto — showing next game within {lookaheadDays} day{lookaheadDays === 1 ? "" : "s"}
+              </span>
+            ) : (
+              <span className="text-[#6b6b70] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4a9d5f] amdb-tally inline-block" />
+                Showing today only
+              </span>
+            )}
           </div>
         </div>
 

@@ -64,6 +64,15 @@ export async function GET() {
       `,
       args: [],
     },
+    {
+      sql: `
+        SELECT value
+        FROM app_settings
+        WHERE key = 'lookahead_days'
+      `,
+      args: [],
+    },
+
   ]);
 
   return NextResponse.json({
@@ -73,17 +82,20 @@ export async function GET() {
     stats: {
       shifts: Number(results[2].rows[0]?.shifts ?? 0),
       seed: Number(results[3].rows[0]?.seed ?? 0),
+      
       lastImport:
         (results[4].rows[0]?.ran_at as string) ?? null,
     },
 
     display_date_override:
       (results[5].rows[0]?.value as string) || null,
+    lookahead_days: Number(results[6].rows[0]?.value ?? 0),
 
     today: todayLocal(),
   }, {
     headers: {
       "Cache-Control": "no-store",
     },
+    
   });
 }
