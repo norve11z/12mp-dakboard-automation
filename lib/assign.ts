@@ -95,7 +95,11 @@ export async function autoAssign(date?: string) {
     });
 
     // Try combo rule match
-    const sportsKey = [...new Set(displays.map(d => d.sport as string))].sort().join(",");
+    const sportsKey = [...new Set(
+      displays
+        .filter((d) => d.display_type !== "engineering")
+        .map((d) => d.sport as string)
+    )].sort().join(",");
     const rule = (await db().execute({
       sql: `SELECT * FROM panel_combo_rules WHERE sports_key = ? ORDER BY priority ASC LIMIT 1`,
       args: [sportsKey],
@@ -121,8 +125,7 @@ export async function autoAssign(date?: string) {
       // Fallback: fill panels 1..4 with displays in order
       const usedPanels = new Set(manualPanels);
       let panelIdx = 1;
-      for (const disp of displays) {
-        while (usedPanels.has(panelIdx) && panelIdx <= 4) panelIdx++;
+      for (const disp of displays.filter((d) => d.display_type !== "engineering")) {
         if (panelIdx > 4) break;
         await db().execute({
           sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 0)`,

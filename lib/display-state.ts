@@ -215,6 +215,9 @@ export async function getPanelState(
     const engineeringGroups = await fetchEngineeringGroups(gameDate, dateRange);
     const pcr = await getPcrAssignments();
 
+    // If only one group, promote it to matchup fields
+    const solo = engineeringGroups.length === 1 ? engineeringGroups[0] : null;
+
     return {
       panel,
       hasContent: true,
@@ -224,6 +227,11 @@ export async function getPanelState(
       engineeringGroups,
       primaryEngineeringSport: null,
       pcr,
+      sport: solo?.sport,
+      opponent: solo?.opponent ?? null,
+      logoUrl: solo?.logoUrl ?? null,
+      kickoff: solo?.kickoff ?? null,
+      title: solo ? titleFor(solo.sport, "engineering") : undefined,
     };
   }
   /*
