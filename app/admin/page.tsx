@@ -393,12 +393,20 @@ const panelsForGame = (game: any) => {
                     }}
                     className="amdb-mono bg-[#0a0a0a] border border-[#2c2c30] px-2 py-1.5 rounded-sm text-xs w-full focus:outline-none focus:border-[#7a1f1f]"
                   >
-                    <option value="">— empty —</option>
-                    {uniqueDisplaysForDate.map(x => (
+                <option value="">— empty —</option>
+                {uniqueDisplaysForDate
+                  .filter((x) => x.display_type !== "engineering" || p === 2)
+                  .map((x) => {
+                    const label =
+                      x.display_type === "engineering"
+                        ? "Engineering (auto)"
+                        : `${x.sport} ${x.display_type === "bigscreen" ? "BS" : "BC"}`;
+                    return (
                       <option key={x.id} value={x.id}>
-                        {x.sport} {x.display_type === "bigscreen" ? "BS" : "BC"}
+                        {label}
                       </option>
-                    ))}
+                    );
+                  })}
                   </select>
                 </div>
               </div>

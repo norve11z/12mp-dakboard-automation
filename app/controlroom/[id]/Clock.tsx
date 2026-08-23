@@ -119,7 +119,12 @@ export function GameCountdown({ kickoff }: { kickoff: string | null | undefined 
 
   if (totalMinutes > 90) {
     const days = Math.ceil(totalMinutes / (60 * 24));
-    countdown = `${days} DAY${days === 1 ? "" : "S"}`;
+
+    if (days === 1) {
+      countdown = "Less than 24 Hrs";
+    } else {
+      countdown = `${days} DAYS`;
+    }
   } else {
     const totalSeconds = Math.floor(difference / 1000);
 
@@ -133,6 +138,7 @@ export function GameCountdown({ kickoff }: { kickoff: string | null | undefined 
       seconds.toString().padStart(2, "0"),
     ].join(":");
   }
+
 
   return (
     <span className="inline-flex items-baseline gap-2 whitespace-nowrap">

@@ -67,6 +67,9 @@ const crewCellPadding =
 
 const engineeringFontSize = "30px";
 const engineeringCellPadding = "5px";
+const showFullMatchup =
+  state.displayType !== "engineering" ||
+  (state.engineeringGroups?.length === 1);
 
   return (
     <div className="control-room w-screen h-screen bg-black text-white flex flex-col overflow-hidden font-sans">
@@ -352,111 +355,113 @@ const engineeringCellPadding = "5px";
           {/* =========================================================
               HEADER
           ========================================================= */}
-          <header className="w-full shrink-0">
-            <div className="h-[clamp(6px,0.6vh,12px)] w-full bg-[#500000]" />
+          {showFullMatchup && (
+            <header className="w-full shrink-0">
+              <div className="h-[clamp(6px,0.6vh,12px)] w-full bg-[#500000]" />
 
-            <div className="header-padding">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="eyebrow-text font-bold tracking-[0.3em] text-[#8f9398] uppercase">
-                    Texas A&M Athletics
-                  </div>
-
-                  <div className="header-title font-black tracking-[0.16em] uppercase text-white mt-1">
-                    12th Man Productions
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <Clock />
-                </div>
-              </div>
-            </div>
-
-            {/* =======================================================
-                MATCHUP
-            ======================================================= */}
-            <div className="matchup-margin">
-              <div className="rounded-xl border border-[#551010] bg-gradient-to-b from-[#1e0000] via-[#100000] to-black overflow-hidden">
-                <div className="matchup-top text-center">
-                  <div className="sport-title inline-block font-black tracking-[0.3em] uppercase text-[#d0d2d4]">
-                    {state.title}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center gap-3 matchup-teams">
-                  {/* Opponent logo — LEFT */}
-                  <div className="w-[28%] flex justify-center items-center">
-                    {state.logoUrl ? (
-                      <div className="team-logo flex items-center justify-center">
-                        <img
-                          src={state.logoUrl}
-                          alt={state.opponent ?? "Opponent"}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                    ) : (
-                      <div className="team-logo rounded-full border-2 border-[#333] flex items-center justify-center">
-                        <span className="opponent-placeholder font-bold tracking-widest text-[#666] uppercase">
-                          Opponent
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Matchup */}
-                  <div className="flex-1 text-center min-w-0">
-                    {/* Opponent — TOP */}
-                    <div className="team-name font-black tracking-tight leading-none text-[#f5f5f5]">
-                      {state.opponent?.toUpperCase()}
+              <div className="header-padding">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="eyebrow-text font-bold tracking-[0.3em] text-[#8f9398] uppercase">
+                      Texas A&M Athletics
                     </div>
 
-                    {state.opponent && (
-                      <>
-                        <div className="flex items-center justify-center matchup-divider">
-                          <div className="h-[2px] w-8 bg-[#700000]" />
+                    <div className="header-title font-black tracking-[0.16em] uppercase text-white mt-1">
+                      12th Man Productions
+                    </div>
+                  </div>
 
-                          <div className="vs-text font-black text-[#c4c6c8]">
-                            @
+                  <div className="text-right">
+                    <Clock />
+                  </div>
+                </div>
+              </div>
+
+              {/* =======================================================
+                  MATCHUP
+              ======================================================= */}
+              <div className="matchup-margin">
+                <div className="rounded-xl border border-[#551010] bg-gradient-to-b from-[#1e0000] via-[#100000] to-black overflow-hidden">
+                  <div className="matchup-top text-center">
+                    <div className="sport-title inline-block font-black tracking-[0.3em] uppercase text-[#d0d2d4]">
+                      {state.title}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-3 matchup-teams">
+                    {/* Opponent logo — LEFT */}
+                    <div className="w-[28%] flex justify-center items-center">
+                      {state.logoUrl ? (
+                        <div className="team-logo flex items-center justify-center">
+                          <img
+                            src={state.logoUrl}
+                            alt={state.opponent ?? "Opponent"}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="team-logo rounded-full border-2 border-[#333] flex items-center justify-center">
+                          <span className="opponent-placeholder font-bold tracking-widest text-[#666] uppercase">
+                            Opponent
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Matchup */}
+                    <div className="flex-1 text-center min-w-0">
+                      {/* Opponent — TOP */}
+                      <div className="team-name font-black tracking-tight leading-none text-[#f5f5f5]">
+                        {state.opponent?.toUpperCase()}
+                      </div>
+
+                      {state.opponent && (
+                        <>
+                          <div className="flex items-center justify-center matchup-divider">
+                            <div className="h-[2px] w-8 bg-[#700000]" />
+
+                            <div className="vs-text font-black text-[#c4c6c8]">
+                              @
+                            </div>
+
+                            <div className="h-[2px] w-8 bg-[#700000]" />
                           </div>
 
-                          <div className="h-[2px] w-8 bg-[#700000]" />
-                        </div>
+                          {/* Texas A&M — BOTTOM */}
+                          <div className="team-name font-black tracking-tight leading-none text-white">
+                            TEXAS A&M
+                          </div>
+                        </>
+                      )}
+                    </div>
 
-                        {/* Texas A&M — BOTTOM */}
-                        <div className="team-name font-black tracking-tight leading-none text-white">
-                          TEXAS A&M
-                        </div>
-                      </>
-                    )}
+                    {/* Texas A&M logo — RIGHT */}
+                    <div className="w-[28%] flex justify-center items-center">
+                      <div className="team-logo flex items-center justify-center">
+                        <img
+                          src="https://a.espncdn.com/i/teamlogos/ncaa/500/245.png"
+                          alt="Texas A&M"
+                          className="max-w-full max-h-full object-contain"
+                          style={{
+                            filter:
+                              "drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white)",
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Texas A&M logo — RIGHT */}
-                  <div className="w-[28%] flex justify-center items-center">
-                    <div className="team-logo flex items-center justify-center">
-                      <img
-                        src="https://a.espncdn.com/i/teamlogos/ncaa/500/245.png"
-                        alt="Texas A&M"
-                        className="max-w-full max-h-full object-contain"
-                        style={{
-                          filter:
-                            "drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white)",
-                        }}
-                      />
+                  <div className="border-t border-[#481111] bg-[#160000] date-bar text-center">
+                    <div className="date-text font-bold tracking-wide text-[#e2e2e2]">
+                      {state.dateLabel}
                     </div>
                   </div>
                 </div>
-
-                <div className="border-t border-[#481111] bg-[#160000] date-bar text-center">
-                  <div className="date-text font-bold tracking-wide text-[#e2e2e2]">
-                    {state.dateLabel}
-                  </div>
-                </div>
               </div>
-            </div>
 
 
-          </header>
+            </header>
+          )}
 
           {/* =========================================================
               MAIN CONTENT
@@ -465,7 +470,7 @@ const engineeringCellPadding = "5px";
             {/* =======================================================
                 SCHEDULE
             ======================================================= */}
-            {!state.engineeringCrew && state.schedule && state.schedule.length > 0 && (
+            {!state.engineeringGroups && state.schedule && state.schedule.length > 0 && (
               <section className="schedule-section shrink-0">
                 <SectionHeader
                   title="Game Schedule"
@@ -499,14 +504,14 @@ const engineeringCellPadding = "5px";
               <div className="mt-1 h-full overflow-hidden rounded-lg border border-[#2b2b2b]">
                 <table
                   className="w-full font-bold"
-                  style={state.engineeringCrew ? { fontSize: engineeringFontSize, lineHeight: 1.05 } : {fontSize: crewFontSize, lineHeight: 1.05}}
+                  style={state.engineeringGroups ? { fontSize: engineeringFontSize, lineHeight: 1.05 } : {fontSize: crewFontSize, lineHeight: 1.05}}
                 >
                   <tbody>
                     {state.sport === "Football" && (
                       <tr className="border-b border-[#2b2b2b] bg-[#101010]">
                         <td
                           className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
-                          style={!state.engineeringCrew ?{
+                          style={!state.engineeringGroups ?{
                             paddingTop: crewCellPadding,
                             paddingBottom: crewCellPadding,
                             paddingLeft: "9px",
@@ -523,7 +528,7 @@ const engineeringCellPadding = "5px";
 
                         <td
                           className="text-white align-top"
-                          style={!state.engineeringCrew ?{
+                          style={!state.engineeringGroups ?{
                             paddingTop: crewCellPadding,
                             paddingBottom: crewCellPadding,
                             paddingLeft: "9px",
@@ -549,7 +554,7 @@ const engineeringCellPadding = "5px";
                         >
                           <td
                             className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
-                            style={!state.engineeringCrew ?{
+                            style={!state.engineeringGroups ?{
                               paddingTop: crewCellPadding,
                               paddingBottom: crewCellPadding,
                               paddingLeft: "9px",
@@ -566,7 +571,7 @@ const engineeringCellPadding = "5px";
 
                           <td
                             className="text-white align-top"
-                            style={!state.engineeringCrew ?{
+                            style={!state.engineeringGroups ?{
                               paddingTop: crewCellPadding,
                               paddingBottom: crewCellPadding,
                               paddingLeft: "9px",
@@ -588,62 +593,31 @@ const engineeringCellPadding = "5px";
                 </table>
               </div>
             </section>
+            {/* Primary engineering (under BS crew, no label) */}
+            {state.primaryEngineeringSport && state.engineeringGroups
+              ?.filter((g) => g.sport === state.primaryEngineeringSport)
+              .map((g, i) => (
+                <EngineeringSection
+                  key={`primary-${i}`}
+                  group={g}
+                  showLabel={false}
+                  fontSize={engineeringFontSize}
+                  cellPadding={engineeringCellPadding}
+                />
+              ))}
 
-            {/* =======================================================
-                ENGINEERING (panel 2 only)
-            ======================================================= */}
-            {state.engineeringCrew && state.engineeringCrew.length > 0 && (
-              <section className="shrink-0 overflow-hidden mt-1">
-                <SectionHeader title="Engineering Staff" />
-
-                <div className="mt-1 overflow-hidden rounded-lg border border-[#2b2b2b]">
-                  <table
-                    className="w-full font-bold"
-                    style={{
-                      fontSize: engineeringFontSize,
-                      lineHeight: 1.05,
-                    }}
-                  >
-                    <tbody>
-                      {state.engineeringCrew.map((row, i) => (
-                        <tr
-                          key={i}
-                          className="border-b border-[#2b2b2b] bg-[#101010] last:border-b-0"
-                        >
-                          <td
-                            className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
-                            style={{
-                              paddingTop: engineeringCellPadding,
-                              paddingBottom: engineeringCellPadding,
-                              paddingLeft: "9px",
-                              paddingRight: "9px",
-                            }}
-                          >
-                            {row.short_label}
-                          </td>
-                          <td
-                            className="text-white align-top"
-                            style={{
-                              paddingTop: engineeringCellPadding,
-                              paddingBottom: engineeringCellPadding,
-                              paddingLeft: "9px",
-                              paddingRight: "9px",
-                            }}
-                          >
-                            {row.names.map((name, ni) => (
-                              <div key={ni}>{name}</div>
-                            ))}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            )}
-            {/* =======================================================
-                PCR ASSIGNMENTS (panel 2 only)
-            ======================================================= */}
+            {/* Other engineering groups (with labels) */}
+            {state.engineeringGroups
+              ?.filter((g) => g.sport !== state.primaryEngineeringSport)
+              .map((g, i) => (
+                <EngineeringSection
+                  key={`other-${i}`}
+                  group={g}
+                  showLabel={true}
+                  fontSize={engineeringFontSize}
+                  cellPadding={engineeringCellPadding}
+                />
+              ))}
           </main>
 
           {/* =========================================================
@@ -928,5 +902,80 @@ function Placeholder({ upcoming }: { panel: number; upcoming: UpcomingGame[] }) 
         </div>
       </div>
     </div>
+  );
+}
+
+
+function EngineeringSection({
+  group,
+  showLabel,
+  fontSize,
+  cellPadding,
+}: {
+  group: NonNullable<DisplayState["engineeringGroups"]>[number];
+  showLabel: boolean;
+  fontSize: string;
+  cellPadding: string;
+}) {
+  const label = showLabel ? (
+    <div className="flex items-center gap-2">
+      {group.logoUrl && (
+        <img
+          src={group.logoUrl}
+          alt=""
+          className="h-6 w-6 object-contain"
+        />
+      )}
+      <span className="text-sm font-bold tracking-wide uppercase text-[#c9cbcd]">
+        {group.sport} vs {group.opponent ?? "TBD"}
+      </span>
+    </div>
+  ) : null;
+
+  return (
+    <section className="shrink-0 overflow-hidden mt-1">
+      <SectionHeader title="Engineering Staff" rightContent={label} />
+
+      <div className="mt-1 overflow-hidden rounded-lg border border-[#2b2b2b]">
+        <table
+          className="w-full font-bold"
+          style={{ fontSize, lineHeight: 1.05 }}
+        >
+          <tbody>
+            {group.crew.map((row, i) => (
+              <tr
+                key={i}
+                className="border-b border-[#2b2b2b] bg-[#101010] last:border-b-0"
+              >
+                <td
+                  className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
+                  style={{
+                    paddingTop: cellPadding,
+                    paddingBottom: cellPadding,
+                    paddingLeft: "9px",
+                    paddingRight: "9px",
+                  }}
+                >
+                  {row.short_label}
+                </td>
+                <td
+                  className="text-white align-top"
+                  style={{
+                    paddingTop: cellPadding,
+                    paddingBottom: cellPadding,
+                    paddingLeft: "9px",
+                    paddingRight: "9px",
+                  }}
+                >
+                  {row.names.map((name, ni) => (
+                    <div key={ni}>{name}</div>
+                  ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

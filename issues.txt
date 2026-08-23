@@ -2,3 +2,4 @@
 - make an admin setting on front page to select how many days out to show the closest game (vs custom date or current day)
 - fix engineer sizing for football games
 - eventually add a admin page and allow dynamically sizing each section on the panels
+- make it so you can select just engineers for panel 2

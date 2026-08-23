@@ -47,8 +47,17 @@ export interface DisplayState {
   schedule?: ScheduleRow[];
   activeScheduleIndex?: number;
   upcoming?: UpcomingGame[];
-  engineeringCrew?: CrewRow[];
+  engineeringGroups?: EngineeringGroup[];
+  primaryEngineeringSport?: string | null;
   pcr?: PcrAssignments | null;
+}
+
+export interface EngineeringGroup {
+  sport: string;
+  opponent: string | null;
+  logoUrl: string | null;
+  kickoff: string | null;
+  crew: CrewRow[];
 }
 
 function formatName(full: string): string {
@@ -68,6 +77,105 @@ function titleFor(sport: string, displayType: string): string {
   const t = displayType === "bigscreen" ? "VIDEOBOARD" : "BROADCAST";
   return `${sport.toUpperCase()} ${t}`;
 }
+
+async function fetchEngineeringGroups(
+  gameDate: string,
+  dateRange: string[]
+): Promise<EngineeringGroup[]> {
+  // Get all engineering shifts for the date across all sports
+  const engResult = await db().execute({
+    sql: `
+      SELECT employee_name, position, sport, dtstart
+      FROM shifts
+      WHERE department = 'Engineering'
+        AND substr(dtstart, 1, 10) IN (?, ?, ?)
+      ORDER BY sport, dtstart
+    `,
+    args: dateRange,
+  });
+
+  const sameDay = engResult.rows.filter(
+    (s) => isoToLocalDate(s.dtstart as string) === gameDate
+  );
+
+  if (sameDay.length === 0) return [];
+
+  // Get all games for this date to match engineers to games by kickoff proximity
+  const gamesResult = await db().execute({
+    sql: `
+      SELECT sport, opponent, logo_url, kickoff
+      FROM game_info
+      WHERE game_date = ?
+      ORDER BY sport, kickoff
+    `,
+    args: [gameDate],
+  });
+
+  const games = gamesResult.rows.map((g) => ({
+    sport: g.sport as string,
+    opponent: (g.opponent as string) ?? null,
+    logoUrl: (g.logo_url as string) ?? null,
+    kickoff: (g.kickoff as string) ?? null,
+  }));
+
+  // Group engineers by (sport, closest kickoff)
+  const GROUP_WINDOW_MS = 30 * 60 * 1000;
+  type GroupKey = string;
+  const groups = new Map<GroupKey, EngineeringGroup>();
+
+  for (const s of sameDay) {
+    const sport = s.sport as string;
+    const shiftTime = new Date(s.dtstart as string).getTime();
+
+    // Find closest game (same sport preferred, then any sport)
+    const sportGames = games.filter((g) => g.sport === sport && g.kickoff);
+    let matchedGame = sportGames[0] ?? null;
+    let closestDiff = Number.MAX_SAFE_INTEGER;
+
+    for (const g of sportGames) {
+      const diff = Math.abs(new Date(g.kickoff!).getTime() - shiftTime);
+      if (diff < closestDiff) {
+        closestDiff = diff;
+        matchedGame = g;
+      }
+    }
+
+    const key = matchedGame
+      ? `${matchedGame.sport}|${matchedGame.kickoff}`
+      : `${sport}|nogame|${Math.floor(shiftTime / GROUP_WINDOW_MS)}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        sport: matchedGame?.sport ?? sport,
+        opponent: matchedGame?.opponent ?? null,
+        logoUrl: matchedGame?.logoUrl ?? null,
+        kickoff: matchedGame?.kickoff ?? null,
+        crew: [],
+      });
+    }
+
+    const g = groups.get(key)!;
+    // Build CrewRow — group by position within the group
+    let row = g.crew.find((r) => r.short_label === (s.position as string).toUpperCase());
+    if (!row) {
+      row = {
+        short_label: (s.position as string).toUpperCase(),
+        display_order: g.crew.length,
+        names: [],
+      };
+      g.crew.push(row);
+    }
+    row.names.push(formatName(s.employee_name as string));
+  }
+
+  // Return groups sorted by kickoff time
+  return Array.from(groups.values()).sort((a, b) => {
+    if (!a.kickoff) return 1;
+    if (!b.kickoff) return -1;
+    return new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
+  });
+}
+
 
 export async function getPanelState(
   panel: number,
@@ -96,6 +204,28 @@ export async function getPanelState(
 
   const disp = dispResult.rows[0];
 
+  if (disp && disp.display_type === "engineering") {
+    const gameDate = disp.game_date as string;
+    const dateRange = [
+      gameDate,
+      addDaysLocal(gameDate, -1),
+      addDaysLocal(gameDate, 1),
+    ];
+
+    const engineeringGroups = await fetchEngineeringGroups(gameDate, dateRange);
+    const pcr = await getPcrAssignments();
+
+    return {
+      panel,
+      hasContent: true,
+      displayType: "engineering",
+      gameDate,
+      dateLabel: formatDateLabel(gameDate),
+      engineeringGroups,
+      primaryEngineeringSport: null,
+      pcr,
+    };
+  }
   /*
    * If this panel doesn't currently have a game assigned,
    * return the upcoming games instead.
@@ -344,71 +474,22 @@ if (selectedKickoff && sameDayShifts.length > 0) {
 
   crew.sort((a, b) => a.display_order - b.display_order);
 
+
   /*
-  * ------------------------------------------------------------
-  * ENGINEERING CREW (panel 2 only)
-  * ------------------------------------------------------------
-  */
-  let engineeringCrew: CrewRow[] | undefined;
+ * ------------------------------------------------------------
+ * ENGINEERING GROUPS (panel 2 only)
+ * ------------------------------------------------------------
+ */
+let engineeringGroups: EngineeringGroup[] | undefined;
+let primaryEngineeringSport: string | null = null;
 
-  if (panel === 2) {
-    const engShiftsResult = await db().execute({
-      sql: `
-        SELECT employee_name, position, dtstart
-        FROM shifts
-        WHERE sport = ?
-          AND department = 'Engineering'
-          AND substr(dtstart, 1, 10) IN (?, ?, ?)
-        ORDER BY dtstart
-      `,
-      args: [sport, ...dateRange],
-    });
+if (panel === 2) {
+  engineeringGroups = await fetchEngineeringGroups(game_date, dateRange);
 
-    const engSameDay = engShiftsResult.rows.filter(
-      (s) => isoToLocalDate(s.dtstart as string) === game_date
-    );
-
-    let engShifts = engSameDay;
-
-    if (selectedKickoff && engSameDay.length > 0) {
-      const kickoffTime = new Date(selectedKickoff).getTime();
-      let closestShiftTime: number | null = null;
-      let closestDiff = Number.MAX_SAFE_INTEGER;
-
-      for (const s of engSameDay) {
-        const shiftTime = new Date(s.dtstart as string).getTime();
-        const diff = Math.abs(shiftTime - kickoffTime);
-        if (diff < closestDiff) {
-          closestDiff = diff;
-          closestShiftTime = shiftTime;
-        }
-      }
-
-      const GROUP_WINDOW_MS = 30 * 60 * 1000;
-      if (closestShiftTime !== null) {
-        engShifts = engSameDay.filter((s) => {
-          const t = new Date(s.dtstart as string).getTime();
-          return Math.abs(t - closestShiftTime) <= GROUP_WINDOW_MS;
-        });
-      }
-    }
-
-    const engByPosition = new Map<string, string[]>();
-    for (const s of engShifts) {
-      const pos = s.position as string;
-      if (!engByPosition.has(pos)) engByPosition.set(pos, []);
-      engByPosition.get(pos)!.push(formatName(s.employee_name as string));
-    }
-
-    engineeringCrew = Array.from(engByPosition.entries()).map(
-      ([pos, names], i) => ({
-        short_label: pos.toUpperCase(),
-        display_order: i,
-        names,
-      })
-    );
+  if (display_type === "bigscreen") {
+    primaryEngineeringSport = sport;
   }
-
+}
 
   /*
    * ------------------------------------------------------------
@@ -491,7 +572,8 @@ if (selectedKickoff && sameDayShifts.length > 0) {
     dateLabel: formatDateLabel(game_date),
     crew,
     schedule,
-    engineeringCrew,
+    engineeringGroups,
+    primaryEngineeringSport,
     pcr,
   };
 }

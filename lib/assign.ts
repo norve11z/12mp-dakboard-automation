@@ -46,6 +46,24 @@ export async function rebuildDisplays() {
     });
   }
 
+  // Synthetic "Engineering" display per date with engineering shifts
+  const engDatesResult = await db().execute(`
+    SELECT DISTINCT substr(dtstart, 1, 10) AS game_date
+    FROM shifts
+    WHERE department = 'Engineering'
+  `);
+
+  for (const row of engDatesResult.rows) {
+    const gameDate = row.game_date as string;
+    await db().execute({
+      sql: `
+        INSERT OR IGNORE INTO displays (sport, game_date, display_type, ics_start)
+        VALUES ('Engineering', ?, 'engineering', ?)
+      `,
+      args: [gameDate, `${gameDate}T00:00:00.000Z`],
+    });
+  }
+
   if (stmts.length) await db().batch(stmts);
   return { count: groups.size };
 }
