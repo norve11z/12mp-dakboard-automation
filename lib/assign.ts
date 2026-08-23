@@ -29,6 +29,7 @@ export async function rebuildDisplays() {
   const stmts: { sql: string; args: (string | number | null)[] }[] = [];
 
   for (const d of currentDisplays) {
+    if (d.display_type === "engineering") continue;  // ← add this
     const key = `${d.sport}|${d.game_date}|${d.display_type}`;
     if (!groups.has(key)) {
       stmts.push({
