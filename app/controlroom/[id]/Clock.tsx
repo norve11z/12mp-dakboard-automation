@@ -42,20 +42,20 @@ export function NonGameClock() {
 
   return (
     <div className="absolute top-5 right-6 z-20">
-      <div className="relative min-w-[290px] overflow-hidden bg-black/90 px-5 py-4">
+      <div className="relative min-w-[300px] overflow-hidden bg-black/90 px-5 py-4">
 
         {/* TIME */}
-        <div className="text-[52px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
+        <div className="text-[60px] font-black leading-none tracking-[-0.06em] text-white tabular-nums font-mono">
           {time}
         </div>
 
         {/* DAY + DATE */}
         <div className="mt-2 flex items-baseline gap-3 whitespace-nowrap">
-          <span className="text-[16px] font-black tracking-[0.18em] uppercase text-white">
+          <span className="text-[20px] font-black tracking-[0.18em] uppercase text-white">
             {day}
           </span>
 
-          <span className="text-[12px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
+          <span className="text-[20px] font-bold tracking-[0.18em] uppercase text-[#9a9a9a]">
             {date}
           </span>
         </div>
