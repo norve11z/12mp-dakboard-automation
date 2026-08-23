@@ -498,60 +498,18 @@ const showFullMatchup =
             {/* =======================================================
                 CREW
             ======================================================= */}
-            <section className="crew-section shrink-0 overflow-hidden">
-              <SectionHeader title={state.displayType === "bigscreen" ? "Big Screen Staff" : "Broadcast Staff"} />
+            {state.displayType !== "engineering" && (
+              <section className="crew-section shrink-0 overflow-hidden">
+                <SectionHeader title={state.displayType === "bigscreen" ? "Big Screen Staff" : "Broadcast Staff"} />
 
-              <div className="mt-1 h-full overflow-hidden rounded-lg border border-[#2b2b2b]">
-                <table
-                  className="w-full font-bold"
-                  style={state.engineeringGroups ? { fontSize: engineeringFontSize, lineHeight: 1.05 } : {fontSize: crewFontSize, lineHeight: 1.05}}
-                >
-                  <tbody>
-                    {state.sport === "Football" && (
-                      <tr className="border-b border-[#2b2b2b] bg-[#101010]">
-                        <td
-                          className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
-                          style={!state.engineeringGroups ?{
-                            paddingTop: crewCellPadding,
-                            paddingBottom: crewCellPadding,
-                            paddingLeft: "9px",
-                            paddingRight: "9px",
-                          } : {
-                            paddingTop: engineeringCellPadding,
-                            paddingBottom: engineeringCellPadding,
-                            paddingLeft: "9px",
-                            paddingRight: "9px",
-                          }}
-                        >
-                          Game Producer
-                        </td>
-
-                        <td
-                          className="text-white align-top"
-                          style={!state.engineeringGroups ?{
-                            paddingTop: crewCellPadding,
-                            paddingBottom: crewCellPadding,
-                            paddingLeft: "9px",
-                            paddingRight: "9px",
-                          } : {
-                            paddingTop: engineeringCellPadding,
-                            paddingBottom: engineeringCellPadding,
-                            paddingLeft: "9px",
-                            paddingRight: "9px",
-                          }}
-                        >
-                          Buddy
-                        </td>
-                      </tr>
-                    )}
-
-                    {state.crew
-                      ?.filter((r) => r.names.length > 0)
-                      .map((row, i) => (
-                        <tr
-                          key={i}
-                          className="border-b border-[#2b2b2b] bg-[#101010] last:border-b-0"
-                        >
+                <div className="mt-1 h-full overflow-hidden rounded-lg border border-[#2b2b2b]">
+                  <table
+                    className="w-full font-bold"
+                    style={state.engineeringGroups ? { fontSize: engineeringFontSize, lineHeight: 1.05 } : {fontSize: crewFontSize, lineHeight: 1.05}}
+                  >
+                    <tbody>
+                      {state.sport === "Football" && (
+                        <tr className="border-b border-[#2b2b2b] bg-[#101010]">
                           <td
                             className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
                             style={!state.engineeringGroups ?{
@@ -566,7 +524,7 @@ const showFullMatchup =
                               paddingRight: "9px",
                             }}
                           >
-                            {row.short_label}
+                            Game Producer
                           </td>
 
                           <td
@@ -583,16 +541,60 @@ const showFullMatchup =
                               paddingRight: "9px",
                             }}
                           >
-                            {row.names.map((name, nameIndex) => (
-                              <div key={nameIndex}>{name}</div>
-                            ))}
+                            Buddy
                           </td>
                         </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+                      )}
+
+                      {state.crew
+                        ?.filter((r) => r.names.length > 0)
+                        .map((row, i) => (
+                          <tr
+                            key={i}
+                            className="border-b border-[#2b2b2b] bg-[#101010] last:border-b-0"
+                          >
+                            <td
+                              className="text-[#c9cbcd] uppercase tracking-wide w-[34%] align-top"
+                              style={!state.engineeringGroups ?{
+                                paddingTop: crewCellPadding,
+                                paddingBottom: crewCellPadding,
+                                paddingLeft: "9px",
+                                paddingRight: "9px",
+                              } : {
+                                paddingTop: engineeringCellPadding,
+                                paddingBottom: engineeringCellPadding,
+                                paddingLeft: "9px",
+                                paddingRight: "9px",
+                              }}
+                            >
+                              {row.short_label}
+                            </td>
+
+                            <td
+                              className="text-white align-top"
+                              style={!state.engineeringGroups ?{
+                                paddingTop: crewCellPadding,
+                                paddingBottom: crewCellPadding,
+                                paddingLeft: "9px",
+                                paddingRight: "9px",
+                              } : {
+                                paddingTop: engineeringCellPadding,
+                                paddingBottom: engineeringCellPadding,
+                                paddingLeft: "9px",
+                                paddingRight: "9px",
+                              }}
+                            >
+                              {row.names.map((name, nameIndex) => (
+                                <div key={nameIndex}>{name}</div>
+                              ))}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
             {/* Primary engineering (under BS crew, no label) */}
             {state.primaryEngineeringSport && state.engineeringGroups
               ?.filter((g) => g.sport === state.primaryEngineeringSport)
