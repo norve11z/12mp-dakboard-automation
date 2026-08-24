@@ -68,7 +68,7 @@ export async function GET() {
       sql: `
         SELECT value
         FROM app_settings
-        WHERE key = 'lookahead_days'
+        WHERE key = 'display_lookahead_days'
       `,
       args: [],
     },
