@@ -41,9 +41,9 @@ const crewRows =
 
 const crewFontSize =
   crewRows <= 5
-    ? "50px"
+    ? "45px"
     : crewRows === 6
-      ? "46px"
+      ? "44px"
       : crewRows === 7
         ? "43px"
         : crewRows === 8
