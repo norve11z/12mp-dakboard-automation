@@ -68,7 +68,6 @@ export async function rebuildDisplays() {
   if (stmts.length) await db().batch(stmts);
   return { count: groups.size };
 }
-
 export async function autoAssign(date?: string) {
   const dates: string[] = date
     ? [date]
@@ -95,7 +94,7 @@ export async function autoAssign(date?: string) {
       args: [gd],
     });
 
-    // Try combo rule match
+    // Combo rule match (exclude engineering from sports key)
     const sportsKey = [...new Set(
       displays
         .filter((d) => d.display_type !== "engineering")
@@ -107,6 +106,7 @@ export async function autoAssign(date?: string) {
     })).rows[0];
 
     let assigned = manuals.length;
+    const assignedPanels = new Set(manualPanels);
 
     if (rule) {
       for (const panel of [1, 2, 3, 4]) {
@@ -120,19 +120,37 @@ export async function autoAssign(date?: string) {
           sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 0)`,
           args: [Number(disp.id), panel, gd],
         });
+        assignedPanels.add(panel);
         assigned++;
       }
     } else {
-      // Fallback: fill panels 1..4 with displays in order
-      const usedPanels = new Set(manualPanels);
+      // Fallback: fill panels 1..4 with non-engineering displays in order,
+      // skipping panel 2 so it's free for engineering default.
       let panelIdx = 1;
       for (const disp of displays.filter((d) => d.display_type !== "engineering")) {
+        while (panelIdx <= 4 && (assignedPanels.has(panelIdx) || panelIdx === 2)) {
+          panelIdx++;
+        }
         if (panelIdx > 4) break;
         await db().execute({
           sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 0)`,
           args: [Number(disp.id), panelIdx, gd],
         });
-        usedPanels.add(panelIdx);
+        assignedPanels.add(panelIdx);
+        assigned++;
+        panelIdx++;
+      }
+    }
+
+    // Default Panel 2 to engineering if it's free and an engineering display exists
+    if (!assignedPanels.has(2)) {
+      const engDisp = displays.find((d) => d.display_type === "engineering");
+      if (engDisp) {
+        await db().execute({
+          sql: `INSERT INTO assignments (display_id, control_room_id, game_date, manual) VALUES (?, ?, ?, 0)`,
+          args: [Number(engDisp.id), 2, gd],
+        });
+        assignedPanels.add(2);
         assigned++;
       }
     }

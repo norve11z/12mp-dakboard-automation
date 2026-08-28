@@ -41,17 +41,17 @@ const crewRows =
 
 const crewFontSize =
   crewRows <= 5
-    ? "45"
+    ? "47px"
     : crewRows === 6
-      ? "43"
+      ? "45px"
       : crewRows === 7
-        ? "43x"
+        ? "43px"
         : crewRows === 8
-          ? "43x"
+          ? "43px"
           : crewRows === 9
-            ? "42"
+            ? "42px"
             : crewRows === 10
-              ? "41x"
+              ? "41px"
               : crewRows <= 17
                 ? "40px"
                 : "35px";
@@ -66,7 +66,7 @@ const crewCellPadding =
         : "3px";
 
 const engineeringFontSize = "27px";
-const engineeringCellPadding = "4x";
+const engineeringCellPadding = "4px";
 const showFullMatchup =
   state.displayType !== "engineering" ||
   (state.engineeringGroups?.length === 1);
