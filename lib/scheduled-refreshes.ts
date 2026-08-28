@@ -29,7 +29,7 @@ export async function rebuildScheduledRefreshes() {
     const [sport, game_date] = key.split("|");
     for (let i = 1; i < kickoffs.length; i++) {
       const switchAt = new Date(
-        new Date(kickoffs[i]).getTime() - 45 * 60 * 1000
+        new Date(kickoffs[i]).getTime() - 4.5 * 60 * 60 * 1000
       ).toISOString();
       inserts.push({ sport, game_date, switch_at: switchAt });
     }
