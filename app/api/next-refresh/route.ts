@@ -8,7 +8,7 @@ export async function GET() {
     const result = await db().execute(`
       SELECT switch_at
       FROM scheduled_refreshes
-      WHERE switch_at >= datetime('now')
+      WHERE switch_at >= datetime('now', '-10 minutes')
         AND executed_at IS NULL
       ORDER BY switch_at ASC
       LIMIT 1

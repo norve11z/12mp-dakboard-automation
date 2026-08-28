@@ -320,7 +320,7 @@ export async function getPanelState(
    * - Once a game's kickoff is within 30 minutes of now, switch to it.
    */
   const now = Date.now();
-  const SWITCH_BUFFER_MS = 4.5 * 60 * 60 * 1000;
+  const SWITCH_BUFFER_MS = 4 * 60 * 60 * 1000;
   let info = games[0];
   for (const g of games) {
     const k = g.kickoff as string | null;
