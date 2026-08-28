@@ -271,7 +271,7 @@ const panelsForGame = (game: any) => {
             </button>
             <button onClick={runSync} disabled={syncing}
               className="amdb-mono px-4 py-1.5 text-xs font-semibold uppercase tracking-wider bg-[#500000] border border-[#7a1f1f] text-[#f3e6e6] rounded-sm hover:bg-[#631515] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-              {syncing ? "Syncing…" : "Sync Now"}
+              {syncing ? "Syncing…" : "Sync Shifts"}
             </button>
             <button onClick={() => setShowAdvanced(v => !v)}
               className="amdb-mono text-[11px] uppercase tracking-wider text-[#6b6b70] hover:text-[#e7e5e2] transition-colors">
