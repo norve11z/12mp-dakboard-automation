@@ -3,6 +3,9 @@ import { db } from "./db";
 
 const SUMMARY_RE = /^(.+?)\s*\(Shift as (.+?) at (.+?) at (.+?)\)\s*$/;
 const IGNORED_DEPARTMENTS = new Set(["Post-Production"]);
+const IGNORED_POSITION_KEYWORDS = ["post production", "post-production", "post prod"];
+
+
 
 const ALLOWED_SPORTS = new Set([
   "Football", "Baseball", "Softball",
@@ -57,6 +60,12 @@ export async function importIcs(url?: string) {
     if (!parsed) { errors.push(`Unparseable: ${summary}`); skipped++; continue; }
     if (IGNORED_DEPARTMENTS.has(parsed.department)) { skipped++; continue; }
     if (!ALLOWED_SPORTS.has(parsed.sport)) { skipped++; continue; }
+        const posLower = parsed.position.toLowerCase();
+    if (IGNORED_POSITION_KEYWORDS.some((kw) => posLower.includes(kw))) {
+      skipped++;
+      continue;
+    }
+
 
     rows.push({
       uid: ev.uid,

@@ -369,7 +369,7 @@ const panelsForGame = (game: any) => {
             ) : (
               <span className="text-[#6b6b70] flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#4a9d5f] amdb-tally inline-block" />
-                Showing today only
+                Showing today
               </span>
             )}
           </div>
