@@ -54,7 +54,7 @@ const crewFontSize =
               ? "41px"
               : crewRows <= 17
                 ? "40px"
-                : "35px";
+                : "32px";
 
 const crewCellPadding =
   crewRows <= 6
@@ -541,7 +541,7 @@ const showFullMatchup =
                               paddingRight: "9px",
                             }}
                           >
-                            Buddy
+                            BUDDY
                           </td>
                         </tr>
                       )}
