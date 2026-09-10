@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { todayLocal } from "@/lib/tz";
 import { NextResponse } from "next/server";
+import { getDisplayDate } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -91,7 +92,7 @@ export async function GET() {
       (results[5].rows[0]?.value as string) || null,
     lookahead_days: Number(results[6].rows[0]?.value ?? 0),
 
-    today: todayLocal(),
+    today: getDisplayDate(),
   }, {
     headers: {
       "Cache-Control": "no-store",
