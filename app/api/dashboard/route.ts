@@ -92,7 +92,7 @@ export async function GET() {
       (results[5].rows[0]?.value as string) || null,
     lookahead_days: Number(results[6].rows[0]?.value ?? 0),
 
-    today: getDisplayDate(),
+    today: await getDisplayDate(),
   }, {
     headers: {
       "Cache-Control": "no-store",
